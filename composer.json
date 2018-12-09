@@ -1,9 +1,9 @@
 {
-    "name": "laravel-admin-ext/configx",
+    "name": "configx",
     "description": "configx",
     "type": "library",
     "keywords": ["laravel-admin", "extension"],
-    "homepage": "https://github.com/laravel-admin-ext/configx",
+    "homepage": "https://github.com/ichynul/configx",
     "license": "MIT",
     "authors": [
         {
