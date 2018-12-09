@@ -66,8 +66,10 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'size_limit' => '大小限制',
             'allow_type' => '允许类型'
         ]
+        'new_config_type' => '新配置类型',
+        'new_config_key' => '新配置key',
         'header'=>'网站设置',
-        'desc'=>'网站设置设置'
+        'desc'=>'网站设置设置',
     ],
     
     'yes' => '是',
