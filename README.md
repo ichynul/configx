@@ -38,6 +38,7 @@ The keys needs start with tab-keys in config :
 + base.site_name
 + base.site_tel
 + base.site_logo_image (As Image uploader)
++ base.site_open_if (As Radio group)
 + ...
 + shop.shipping_compnay
 + shop.open_time (As Time piker)
