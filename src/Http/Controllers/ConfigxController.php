@@ -56,8 +56,6 @@ class ConfigxController extends Controller
 
     public function saveall(Request $request)
     {
-        //$files = $request->file();
-        //\Illuminate\Support\Facades\Log::info(json_encode($files));
         foreach ($request->values as $key => $value) {
             if (in_array($key, ['c_type', 'c_name'])) {
                 continue;
@@ -71,7 +69,6 @@ class ConfigxController extends Controller
             }
             $config->value = $value;
             $config->update();
-            //ConfigxModel::where(['id' => $id])->update(['value' => $value]);
         }
         if (!empty($request->values['c_type']) && !empty($request->values['c_name'])) {
             $new_key = $request->values['c_name'];
