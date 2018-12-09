@@ -1,6 +1,6 @@
 {
-    "name": "configx",
-    "description": "ichynul/configx",
+    "name": "ichynul/configx",
+    "description": "laravel-admin extension configx",
     "type": "library",
     "keywords": ["laravel-admin", "extension"],
     "homepage": "https://github.com/ichynul/configx",
