@@ -34,17 +34,19 @@ Open `http://your-host/admin/configx`
 ## Usage
 
 The keys needs start with tab-keys in config :
-base.site_name
-base.site_tel
-base.site_logo_image (As Image uploader)
-...
-shop.shipping_compnay
-shop.open_time (As Time piker)
-shop.open_date (As Date piker)
-...
-uplaod.size_limit
-uplaod.allow_type
-...
+## demo
++ base.site_name
++ base.site_tel
++ base.site_logo_image (As Image uploader)
++ ...
++ shop.shipping_compnay
++ shop.open_time (As Time piker)
++ shop.open_date (As Date piker)
++ ...
++ uplaod.size_limit
++ uplaod.allow_type
++ ...
+
 you can click "+" to add an new config key .
 
 if you need add a new config tab, chang it in `config/admin.php`.
