@@ -73,9 +73,10 @@ class ConfigxController extends Controller
         if (!empty($request->values['c_type']) && !empty($request->values['c_name'])) {
             $new_key = $request->values['c_name'];
             if (!preg_match('/^' . $request->values['c_type'] . '\.\w{1,}/', $new_key)) {
-                admin_toastr('config key error', 'error');
-                $request->flash();
-                return redirect()->back();
+                //admin_toastr('config key error', 'error');
+                //$request->flash();
+                //return redirect()->back();
+                $new_key = $request->values['c_type'] . '.' . $new_key;
             }
             $config = new ConfigxModel(['name' => $new_key, 'value' => trans('admin.configx.' . $new_key)]);
             $config->save();
