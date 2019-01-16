@@ -99,6 +99,11 @@ class ConfigxController extends Controller
             if (!preg_match('/^' . $request->values['c_type'] . '\.\w{1,}/', $new_key)) {
                 $new_key = $request->values['c_type'] . '.' . $new_key;
             }
+            if ($request->values['c_element'] == "date") {
+                $defaultVal = "2019-01-01";
+            } else if ($request->values['c_element'] == "datetime") {
+                $defaultVal = "2019-01-01 01:01:01";
+            }
             if ($request->values['c_options']) {
                 $c_options = explode("\r\n", $request->values['c_options']);
                 $arr = [];
