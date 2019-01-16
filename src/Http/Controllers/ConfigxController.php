@@ -2,25 +2,29 @@
 
 namespace Ichynul\Configx\Http\Controllers;
 
-use Encore\Admin\Layout\Content;
 use Encore\Admin\Form;
-use Encore\Admin\Facades\Admin;
-use Illuminate\Routing\Controller;
-use Ichynul\Configx\ConfigxModel;
-use Encore\Admin\Config\Config;
 use Ichynul\Configx\Configx;
 use Illuminate\Http\Request;
-use Encore\Admin\Widgets\Tab as Wtab;
-use Encore\Admin\Form\Field\Text;
-use Encore\Admin\Form\Field\Select;
-use Encore\Admin\Form\Field\Radio;
-use Encore\Admin\Form\Field\Checkbox;
+use Encore\Admin\Config\Config;
+use Encore\Admin\Facades\Admin;
+use Encore\Admin\Layout\Content;
 use Encore\Admin\Form\Field\Date;
+use Encore\Admin\Form\Field\Rate;
+use Encore\Admin\Form\Field\Text;
 use Encore\Admin\Form\Field\Time;
-use Encore\Admin\Form\Field\Datetime;
+use Ichynul\Configx\ConfigxModel;
 use Encore\Admin\Form\Field\Image;
+use Encore\Admin\Form\Field\Radio;
+use Illuminate\Routing\Controller;
 use Encore\Admin\Form\Field\Editor;
+use Encore\Admin\Form\Field\Hidden;
+use Encore\Admin\Form\Field\Number;
+use Encore\Admin\Form\Field\Select;
+use Encore\Admin\Form\Field\Checkbox;
+use Encore\Admin\Form\Field\Datetime;
 use Encore\Admin\Form\Field\Textarea;
+use Encore\Admin\Widgets\Tab as Wtab;
+use Illuminate\Support\Facades\Session;
 
 class ConfigxController extends Controller
 {
@@ -65,6 +69,8 @@ class ConfigxController extends Controller
         $configx_options = ConfigxModel::where('name', '__configx__')->first();
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
+        } else {
+            $configx_options = new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
         }
         foreach ($request->values as $key => $value) {
             if (in_array($key, ['c_type', 'c_element', 'c_name', 'c_options'])) {
@@ -81,29 +87,51 @@ class ConfigxController extends Controller
                 } else if ($etype == 'checkbox_group') {
                     $value = implode(',', $value);
                 }
+            } else {
+                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal'];
             }
             $config->value = $value;
             $config->update();
         }
         if (!empty($request->values['c_type']) && !empty($request->values['c_name'])) {
             $new_key = $request->values['c_name'];
+            $defaultVal = "1";
             if (!preg_match('/^' . $request->values['c_type'] . '\.\w{1,}/', $new_key)) {
                 $new_key = $request->values['c_type'] . '.' . $new_key;
             }
-            $config = new ConfigxModel(['name' => $new_key, 'value' => '1', 'description' => trans('admin.configx.' . $new_key)]);
-            $config->save();
-            $cx_options[$new_key] = ['options' => $request->values['c_options'] ? json_decode($request->values['c_options']) : [], 'element' => $request->values['c_element']];
-            if ($configx_options) {
-                $configx_options['description'] = json_encode($cx_options);
-                $configx_options->save();
+            if ($request->values['c_options']) {
+                $c_options = explode("\r\n", $request->values['c_options']);
+                $arr = [];
+                foreach ($c_options as $op) {
+                    $kv = explode(":", $op);
+                    if (count($kv) > 1) {
+                        $arr[$kv[0]] = $kv[1];
+                    } else {
+                        $arr[$kv[0]] = $kv[0];
+                    }
+                }
+                $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element']];
+                $keys = array_keys($arr);
+                if ($keys) {
+                    $defaultVal = $keys[0];
+                }
             } else {
-                $configx_options = new ConfigxModel(['name' => '__configx__', 'description' => json_encode($cx_options), 'value' => 'do not delete']);
-                $configx_options->save();
+                if (in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select'])) {
+                    admin_toastr('The options is empty !', 'error');
+                    return redirect()->back();
+                } else {
+                    $cx_options[$new_key] = ['options' => [], 'element' => $request->values['c_element']];
+                }
             }
+            $config = new ConfigxModel(['name' => $new_key, 'value' => $defaultVal, 'description' => trans('admin.configx.' . $new_key)]);
+            $config->save();
             admin_toastr(trans('admin.save_succeeded'));
         } else {
             admin_toastr(trans('admin.update_succeeded'));
         }
+        $configx_options['description'] = json_encode($cx_options);
+        $configx_options->save();
+        Session::put('tabindex', $request->input('tabindex', 0));
         return redirect()->back();
     }
 
@@ -119,7 +147,7 @@ class ConfigxController extends Controller
             $field = new Text($rowname, [$label]);
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
-            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'editor', 'radio_group', 'checkbox_group'];
+            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group', 'checkbox_group', 'select'];
             $support = [];
             foreach ($elements as $el) {
                 $support[$el] = trans('admin.configx.element.' . $el);
@@ -127,7 +155,7 @@ class ConfigxController extends Controller
             $field->options($support)->default('normal');
         } else if ($val['id'] == 'options') {
             $field = new Textarea($rowname, [$label]);
-            $field->help("options {\"key1\":\"text1\",\"key2\":\"text2\",..}");
+            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...");
         } else {
             if ($configx_options && $configx_options['description']) {
                 $cx_options = json_decode($configx_options['description'], 1);
@@ -150,19 +178,26 @@ class ConfigxController extends Controller
                     } else if ($etype == 'editor') {
                         $field = new Editor($rowname, [$label]);
                         if (!isset(Form::$availableFields['editor'])) {
-                            admin_toastr('The editor unuseable !', 'warning');
+                            admin_toastr('The editor is unuseable !', 'warning');
                         }
+                    } else if ($etype == 'number') {
+                        $field = new Number($rowname, [$label]);
+                    } else if ($etype == 'rate') {
+                        $field = new Rate($rowname, [$label]);
                     } else if ($etype == 'radio_group') {
                         $field = new Radio($rowname, [$label]);
                         $field->options($cx_options[$val['name']]['options']);
                     } else if ($etype == 'checkbox_group') {
                         $field = new Checkbox($rowname, [$label]);
                         $field->options($cx_options[$val['name']]['options']);
+                    } else if ($etype == 'select') {
+                        $field = new Select($rowname, [$label]);
+                        $field->options($cx_options[$val['name']]['options']);
                     } else {
                         $field = new Text($rowname, [$label]);
                     }
                     if ($etype == 'checkbox_group') {
-                        $field->default(explode(',', $val['value']));
+                        $field->value(explode(',', $val['value']));
                     } else {
                         $field->value($val['value']);
                     }
@@ -181,7 +216,10 @@ class ConfigxController extends Controller
 
     protected function createform($tab)
     {
-        $fields = [$tab];
+        $indexfield = new Hidden('tabindex', 'tabindex');
+        $indexfield->value(Session::get('tabindex'));
+        $indexfield->default(0);
+        $fields = [$tab, $indexfield];
         $html = [];
         $buttons = ['reset', 'submit'];
         $attributes = [
@@ -212,8 +250,18 @@ $("input:radio[name='values[c_type]']").on('ifChecked', function(event){
     $('input[name="values[c_name]"]').val(this.value?this.value + '.new_key_here':'');
 });
 $("input:radio[name='values[c_element]']").on('ifChecked', function(event){
-    $("#options_div").css('display',this.value=='radio_group'||this.value=='checkbox_group'?'':'none');
+    $("#options_div").css('display',this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select'?'':'none');
 });
+$("body").on("click",".nav.nav-tabs li",function(){
+    var index = $(".nav.nav-tabs li").index(this);
+    $("input[name='tabindex']").val(index);
+});
+var index = $(".nav.nav-tabs li").index($(".nav.nav-tabs li.active"));
+var _index = $("input[name='tabindex']").val();
+if(index != _index)
+{
+    $(".nav.nav-tabs li").eq(_index).find("a").trigger('click');
+}
 EOT;
         Admin::script($script);
     }
