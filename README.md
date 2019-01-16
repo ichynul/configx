@@ -88,6 +88,7 @@ step 2 select form-element type from ['normal', 'date', 'time', 'datetime', 'ima
 
 step 3 if you selected form-element type is ['radio_group' ,'checkbox_group', 'select'] ,you need inupt [options]
 
+```html
 just text:
 
 text1
@@ -99,7 +100,9 @@ and key-text:
 key1:text1
 key2:text2
 
+```
 this will save a config named '__configx__' like this ：
+```json
 {
     "shop.shipping_compnay":{
         "options":{
@@ -124,7 +127,7 @@ this will save a config named '__configx__' like this ：
         "element":"normal"
     }
 }
-
+```
 you can copy it to json-eidtor and change it .
 ...
 
