@@ -16,7 +16,6 @@ use Ichynul\Configx\ConfigxModel;
 use Encore\Admin\Form\Field\Image;
 use Encore\Admin\Form\Field\Radio;
 use Illuminate\Routing\Controller;
-use Encore\Admin\Form\Field\Editor;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Form\Field\Number;
 use Encore\Admin\Form\Field\Select;
@@ -160,7 +159,7 @@ class ConfigxController extends Controller
             $field->options($support)->default('normal');
         } else if ($val['id'] == 'options') {
             $field = new Textarea($rowname, [$label]);
-            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...");
+            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...".Form::$availableFields['editor']);
         } else {
             if ($configx_options && $configx_options['description']) {
                 $cx_options = json_decode($configx_options['description'], 1);
@@ -181,9 +180,14 @@ class ConfigxController extends Controller
                         $field = new Radio($rowname, [$label]);
                         $field->options(['1' => trans('admin.yes'), '0' => trans('admin.no')]);
                     } else if ($etype == 'editor') {
-                        $field = new Editor($rowname, [$label]);
+                        \Log::info(Form::$availableFields['editor']);
                         if (!isset(Form::$availableFields['editor'])) {
                             admin_toastr('The editor is unuseable !', 'warning');
+                            $field = new Textarea($rowname, [$label]);
+                        }
+                        else
+                        {
+                            $field = new Form::$availableFields['editor']($rowname, [$label]);
                         }
                     } else if ($etype == 'number') {
                         $field = new Number($rowname, [$label]);
