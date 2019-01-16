@@ -159,7 +159,7 @@ class ConfigxController extends Controller
             $field->options($support)->default('normal');
         } else if ($val['id'] == 'options') {
             $field = new Textarea($rowname, [$label]);
-            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...".Form::$availableFields['editor']);
+            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...");
         } else {
             if ($configx_options && $configx_options['description']) {
                 $cx_options = json_decode($configx_options['description'], 1);
