@@ -39,8 +39,12 @@ class ConfigxController extends Controller
         $extconf['tabs']['new_config'] = "+";
         $tab = new Wtab();
         foreach ($extconf['tabs'] as $key => $value) {
-            $formhtml = '<div class="col-md-12">';
+            $formhtml = '<ol class="dd-list col-md-12">';
             $subs = ConfigxModel::group($key);
+            if ($configx_options && $configx_options['description']) {
+                $cx_options = json_decode($configx_options['description'], 1);
+                $subs = $this->sortConfig($subs, $cx_options);
+            }
             if ($key == 'new_config') {
                 $subs = array(
                     ['id' => 'type', 'name' => 'new_config_type', 'value' => ''],
@@ -52,15 +56,32 @@ class ConfigxController extends Controller
             foreach ($subs as $val) {
                 $formhtml .= $this->createField($val, $extconf, $configx_options);
             }
-            $formhtml .= '</div>';
-            $tab->add($value, '<div class="row">' . $formhtml . '</div>', false);
+            $formhtml .= '</ol>';
+            $tab->add($value, ($key != 'new_config' ? '<div class="dd row">' : '<div class="row">') . $formhtml . '</div>', false);
         }
         $form = $this->createform($tab);
         $this->bindEvents();
         return $content
             ->header(trans('admin.configx.header'))
             ->description(trans('admin.configx.desc'))
+            ->breadcrumb(
+                ['text' => trans('admin.configx.header'), 'url' => '']
+            )
             ->body('<div style="background-color:#fff;">' . $form . '</div>');
+    }
+
+    public function sortConfig($configs, $cx_options)
+    {
+        $order = [];
+        foreach ($configs as $conf) {
+            if (isset($cx_options[$conf['name']])) {
+                $order[] = $cx_options[$conf['name']]['order'] ? : 999;
+            } else {
+                $order[] = 999;
+            }
+        }
+        array_multisort($order, SORT_ASC, $configs);
+        return $configs;
     }
 
     public function saveall(Request $request)
@@ -69,8 +90,9 @@ class ConfigxController extends Controller
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
         } else {
-            $configx_options = new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
+            $configx_options = $this->createConfigx();
         }
+        \DB::beginTransaction();
         foreach ($request->values as $key => $value) {
             if (in_array($key, ['c_type', 'c_element', 'c_name', 'c_options'])) {
                 continue;
@@ -87,11 +109,12 @@ class ConfigxController extends Controller
                     $value = implode(',', $value);
                 }
             } else {
-                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal'];
+                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'order' => 999];
             }
             $config->value = $value;
             $config->update();
         }
+        \DB::commit();
         if (!empty($request->values['c_type']) && !empty($request->values['c_name'])) {
             $new_key = $request->values['c_name'];
             $defaultVal = "1";
@@ -139,6 +162,36 @@ class ConfigxController extends Controller
         return redirect()->back();
     }
 
+    public function sort(Request $request)
+    {
+        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+        if ($configx_options && $configx_options['description']) {
+            $cx_options = json_decode($configx_options['description'], 1);
+        } else {
+            $configx_options = $this->createConfigx();
+        }
+        $data = $request->input('data');
+        $i = 1;
+        foreach ($data as $s) {
+            $id = $s['id'];
+            $config = ConfigxModel::findOrFail($id);
+            if (isset($cx_options[$config['name']])) {
+                $cx_options[$config['name']]['order'] = $i;
+            } else {
+                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'order' => $i];
+            }
+            $i += 5;
+        }
+        $configx_options['description'] = json_encode($cx_options);
+        $configx_options->save();
+        return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
+    }
+
+    protected function createConfigx()
+    {
+        return new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
+    }
+
     protected function createField($val, $extconf, $configx_options)
     {
         $label = trans('admin.configx.' . $val['name']);
@@ -180,13 +233,10 @@ class ConfigxController extends Controller
                         $field = new Radio($rowname, [$label]);
                         $field->options(['1' => trans('admin.yes'), '0' => trans('admin.no')]);
                     } else if ($etype == 'editor') {
-                        \Log::info(Form::$availableFields['editor']);
                         if (!isset(Form::$availableFields['editor'])) {
                             admin_toastr('The editor is unuseable !', 'warning');
                             $field = new Textarea($rowname, [$label]);
-                        }
-                        else
-                        {
+                        } else {
                             $field = new Form::$availableFields['editor']($rowname, [$label]);
                         }
                     } else if ($etype == 'number') {
@@ -217,9 +267,11 @@ class ConfigxController extends Controller
                 $field->value($val['value']);
             }
         }
-        $html = $val['id'] == 'options' ? '<div class="row" style="display:none;" id="options_div">' : '<div class="row">';
+        $html = !in_array($val['id'], ['type', 'options', 'element', 'name']) ? '<li class="dd-item" data-id="' . $val['id'] . '">'
+            : ($val['id'] == 'options' ? '<li style="display:none;" id="options_li">'
+            : '<li>');
         $html .= $field->render();
-        $html .= '</div>';
+        $html .= '</li>';
         return $html;
     }
 
@@ -254,12 +306,13 @@ class ConfigxController extends Controller
 
     protected function bindEvents()
     {
+        $call_back = admin_base_path('configx/sort');
         $script = <<<EOT
 $("input:radio[name='values[c_type]']").on('ifChecked', function(event){
     $('input[name="values[c_name]"]').val(this.value?this.value + '.new_key_here':'');
 });
 $("input:radio[name='values[c_element]']").on('ifChecked', function(event){
-    $("#options_div").css('display',this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select'?'':'none');
+    $("#options_li").css('display',this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select'?'':'none');
 });
 $("body").on("click",".nav.nav-tabs li",function(){
     var index = $(".nav.nav-tabs li").index(this);
@@ -271,6 +324,25 @@ if(index != _index)
 {
     $(".nav.nav-tabs li").eq(_index).find("a").trigger('click');
 }
+$('.dd').nestable({group: 1}).on('change', function(){ 
+    var data = $(this).nestable('serialize'); 
+    $('.dd-handle').removeClass('dd-handle');
+    $.ajax({
+        url: "{$call_back}",
+        type: "POST",
+        data: {
+            data: data,
+            _token: LA.token,
+            _method: 'PUT'
+        },
+        success: function (data) {
+            toastr.success(data.message);
+        }
+    });
+});
+$('.dd').dblclick(function(){
+    $(this).find('li.dd-item .form-group').addClass('dd-handle');
+});
 EOT;
         Admin::script($script);
     }

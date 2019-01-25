@@ -86,7 +86,7 @@ step 1 select config type from ['base' , 'shop' , 'uplaod']
 
 step 2 select form-element type from ['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group' ,'checkbox_group', 'select'] 
 
-step 3 if you selected form-element type is ['radio_group' ,'checkbox_group', 'select'] ,you need inupt [options]
+step 3 if you selected form-element type is ['radio_group' ,'checkbox_group', 'select'] ,you need input [options]
 
 ```html
 just text:
