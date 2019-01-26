@@ -60,7 +60,7 @@ key2:text2
 
 ```
 
-this will save a config named '__configx__' like this ：
+this will save a config named _ _ configx _ _ like this ：
 
 ```json
 {
@@ -90,6 +90,8 @@ this will save a config named '__configx__' like this ：
 ```
 
 you can copy it to json-eidtor and change it .
+
+Double click any area of form to sort configs.
 
 The keys will start with tab-keys in config :
 
