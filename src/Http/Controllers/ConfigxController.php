@@ -74,7 +74,7 @@ class ConfigxController extends Controller
     {
         $order = [];
         foreach ($configs as $conf) {
-            if (isset($cx_options[$conf['name']])) {
+            if (isset($cx_options[$conf['name']]) && isset($cx_options[$conf['name']]['order'])) {
                 $order[] = $cx_options[$conf['name']]['order'] ? : 999;
             } else {
                 $order[] = 999;
@@ -137,7 +137,7 @@ class ConfigxController extends Controller
                         $arr[$kv[0]] = $kv[0];
                     }
                 }
-                $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element']];
+                $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element'], 'order' => 999];
                 $keys = array_keys($arr);
                 if ($keys) {
                     $defaultVal = $keys[0];
@@ -147,7 +147,7 @@ class ConfigxController extends Controller
                     admin_toastr('The options is empty !', 'error');
                     return redirect()->back();
                 } else {
-                    $cx_options[$new_key] = ['options' => [], 'element' => $request->values['c_element']];
+                    $cx_options[$new_key] = ['options' => [], 'element' => $request->values['c_element'], 'order' => 999];
                 }
             }
             $config = new ConfigxModel(['name' => $new_key, 'value' => $defaultVal, 'description' => trans('admin.configx.' . $new_key)]);
