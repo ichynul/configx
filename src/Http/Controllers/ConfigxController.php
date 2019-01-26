@@ -324,9 +324,15 @@ if(index != _index)
 {
     $(".nav.nav-tabs li").eq(_index).find("a").trigger('click');
 }
-$('.dd').nestable({group: 1}).on('change', function(){ 
+var sorting = false;
+$('.dd').nestable({maxDepth: 1,handleClass:'my-handle'}).on('change', function(){ 
+    if(!sorting)
+    {
+        return false;
+    }
+    sorting = false;
+    $('.my-handle').removeClass('my-handle').css('cursor','inherit');
     var data = $(this).nestable('serialize'); 
-    $('.dd-handle').removeClass('dd-handle');
     $.ajax({
         url: "{$call_back}",
         type: "POST",
@@ -341,7 +347,8 @@ $('.dd').nestable({group: 1}).on('change', function(){
     });
 });
 $('.dd').dblclick(function(){
-    $(this).find('li.dd-item .form-group').addClass('dd-handle');
+    sorting = true;
+    $(this).find('li.dd-item .form-group').addClass('my-handle').css('cursor','move');
 });
 EOT;
         Admin::script($script);
