@@ -14,6 +14,7 @@ use Encore\Admin\Form\Field\Text;
 use Encore\Admin\Form\Field\Time;
 use Ichynul\Configx\ConfigxModel;
 use Encore\Admin\Form\Field\Image;
+use Encore\Admin\Form\Field\MultipleImage;
 use Encore\Admin\Form\Field\Radio;
 use Illuminate\Routing\Controller;
 use Encore\Admin\Form\Field\Hidden;
@@ -22,6 +23,9 @@ use Encore\Admin\Form\Field\Select;
 use Encore\Admin\Form\Field\Checkbox;
 use Encore\Admin\Form\Field\Datetime;
 use Encore\Admin\Form\Field\Textarea;
+use Encore\Admin\Form\Field\Tags;
+use Encore\Admin\Form\Field\Icon;
+use Encore\Admin\Form\Field\Color;
 use Encore\Admin\Widgets\Tab as Wtab;
 use Illuminate\Support\Facades\Session;
 
@@ -70,7 +74,7 @@ class ConfigxController extends Controller
             ->body('<div style="background-color:#fff;">' . $form . '</div>');
     }
 
-    public function sortConfig($configs, $cx_options)
+    protected function sortConfig($configs, $cx_options)
     {
         $order = [];
         foreach ($configs as $conf) {
@@ -105,7 +109,11 @@ class ConfigxController extends Controller
                     $rowname = 'values.c_' . $config['id'];
                     $field = new Image($rowname, ['']);
                     $value = $field->prepare($value);
-                } else if ($etype == 'checkbox_group') {
+                } else if ($etype == 'multiple_image') {
+                    $rowname = 'values.c_' . $config['id'];
+                    $field = new MultipleImage($rowname, ['']);
+                    $value = implode(',', $field->prepare($value));
+                } else if ($etype == 'checkbox_group' || $etype == 'tags') {
                     $value = implode(',', $value);
                 }
             } else {
@@ -125,6 +133,12 @@ class ConfigxController extends Controller
                 $defaultVal = "2019-01-01";
             } else if ($request->values['c_element'] == "datetime") {
                 $defaultVal = "2019-01-01 01:01:01";
+            } else if ($request->values['c_element'] == "icon") {
+                $defaultVal = "fa-code";
+            } else if ($request->values['c_element'] == "color") {
+                $defaultVal = "#ccc";
+            } else if ($request->values['c_element'] == "multiple_image") {
+                $defaultVal = '';
             }
             if ($request->values['c_options']) {
                 $c_options = explode("\r\n", $request->values['c_options']);
@@ -204,7 +218,7 @@ class ConfigxController extends Controller
             $field = new Text($rowname, [$label]);
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
-            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group', 'checkbox_group', 'select'];
+            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'multiple_image', 'yes_or_no', 'rate', 'editor', 'tags', 'icon', 'color', 'number', 'textarea', 'radio_group', 'checkbox_group', 'select'];
             $support = [];
             foreach ($elements as $el) {
                 $support[$el] = trans('admin.configx.element.' . $el);
@@ -212,7 +226,16 @@ class ConfigxController extends Controller
             $field->options($support)->default('normal');
         } else if ($val['id'] == 'options') {
             $field = new Textarea($rowname, [$label]);
-            $field->help("options <br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>...");
+            $group_elem = trans('admin.configx.element.radio_group') . '/'
+                . trans('admin.configx.element.checkbox_group') . '/'
+                . trans('admin.configx.element.select');
+            $select_elem = trans('admin.configx.element.select');
+            $textarea_elem = trans('admin.configx.element.checkbox_group');
+            $number_elem = trans('admin.configx.element.number');
+            $field->help("options <div class='group_elem'>{$group_elem}<br/>text1<br/>text2<br/>...<br/>or<br/>key1:text1<br/>key2:text2<br/>..."
+                . "<div class='select_elem'>{$select_elem}<br/>or load data from url:<br/>options_url:/api/mydata</div>" . "</div> "
+                . "<div class='textarea_elem'>{$textarea_elem}<br/>rows:5</div>"
+                . "<div class='number_elem'>{$number_elem}<br/>max:100<br/>min:1</div>");
         } else {
             if ($configx_options && $configx_options['description']) {
                 $cx_options = json_decode($configx_options['description'], 1);
@@ -223,6 +246,14 @@ class ConfigxController extends Controller
                     $etype = $cx_options[$val['name']]['element'];
                     if ($etype == 'image') {
                         $field = new Image($rowname, [$label]);
+                    } else if ($etype == 'multiple_image') {
+                        $field = new MultipleImage($rowname, [$label]);
+                        $field->removable();
+                    } else if ($etype == 'textarea') {
+                        $field = new Textarea($rowname, [$label]);
+                        if (isset($cx_options[$val['name']]['options']['rows'])) {
+                            $field->rows($cx_options[$val['name']]['options']['rows']);
+                        }
                     } else if ($etype == 'date') {
                         $field = new Date($rowname, [$label]);
                     } else if ($etype == 'time') {
@@ -241,6 +272,12 @@ class ConfigxController extends Controller
                         }
                     } else if ($etype == 'number') {
                         $field = new Number($rowname, [$label]);
+                        if (isset($cx_options[$val['name']]['options']['max'])) {
+                            $field->max($cx_options[$val['name']]['options']['max']);
+                        }
+                        if (isset($cx_options[$val['name']]['options']['min'])) {
+                            $field->min($cx_options[$val['name']]['options']['min']);
+                        }
                     } else if ($etype == 'rate') {
                         $field = new Rate($rowname, [$label]);
                     } else if ($etype == 'radio_group') {
@@ -251,12 +288,34 @@ class ConfigxController extends Controller
                         $field->options($cx_options[$val['name']]['options']);
                     } else if ($etype == 'select') {
                         $field = new Select($rowname, [$label]);
+                        if (isset($cx_options[$val['name']]['options']['options_url'])) {
+                            $field->options($cx_options[$val['name']]['options']['options_url']);
+                        }
+                        else
+                        {
+                            $field->options($cx_options[$val['name']]['options']);
+                        }
+                    } else if ($etype == 'tags') {
+                        $field = new Tags($rowname, [$label]);
+                        $field->options($cx_options[$val['name']]['options']);
+                    } else if ($etype == 'icon') {
+                        $field = new Icon($rowname, [$label]);
+                        $field->options($cx_options[$val['name']]['options']);
+                    } else if ($etype == 'color') {
+                        $field = new Color($rowname, [$label]);
                         $field->options($cx_options[$val['name']]['options']);
                     } else {
                         $field = new Text($rowname, [$label]);
                     }
-                    if ($etype == 'checkbox_group') {
+                    if ($etype == 'checkbox_group' || $etype == 'tags') {
+                        $val['value'] = preg_replace('/,$/', '', $val['value']);
                         $field->value(explode(',', $val['value']));
+                    } else if ($etype == 'multiple_image') {
+                        $val['value'] = preg_replace('/,$/', '', $val['value']);
+                        $images = explode(',', $val['value']);
+                        if ($val['value'] && count($images)) {
+                            $field->value($images);
+                        }
                     } else {
                         $field->value($val['value']);
                     }
@@ -312,7 +371,32 @@ $("input:radio[name='values[c_type]']").on('ifChecked', function(event){
     $('input[name="values[c_name]"]').val(this.value?this.value + '.new_key_here':'');
 });
 $("input:radio[name='values[c_element]']").on('ifChecked', function(event){
-    $("#options_li").css('display',this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select'?'':'none');
+    $("#options_li").css('display',this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select'
+    ||this.value=='textarea'
+    ||this.value=='number'?'':'none');
+    if(this.value=='radio_group'||this.value=='checkbox_group'||this.value=='select')
+    {
+        $('.group_elem').show();
+        $('.textarea_elem,.number_elem').hide();
+        if(this.value=='select')
+        {
+            $('.select_elem').show();
+        }
+        else
+        {
+            $('.select_elem').hide();
+        }
+    }
+    else if(this.value=='textarea')
+    {
+        $('.textarea_elem').show();
+        $('.group_elem,.number_elem').hide();
+    }
+    else if(this.value=='number')
+    {
+        $('.number_elem').show();
+        $('.textarea_elem,.group_elem').hide();
+    }
 });
 $("body").on("click",".nav.nav-tabs li",function(){
     var index = $(".nav.nav-tabs li").index(this);
@@ -331,7 +415,8 @@ $('.dd').nestable({maxDepth: 1,handleClass:'my-handle'}).on('change', function()
         return false;
     }
     sorting = false;
-    $('.my-handle').removeClass('my-handle').css('cursor','inherit');
+    $('.my-handle').removeClass('my-handle');
+    $('ol.dd-list').css({'cursor':'inherit','border':'none','padding':'0'});
     var data = $(this).nestable('serialize'); 
     $.ajax({
         url: "{$call_back}",
@@ -348,8 +433,13 @@ $('.dd').nestable({maxDepth: 1,handleClass:'my-handle'}).on('change', function()
 });
 $('.dd').dblclick(function(){
     sorting = true;
-    $(this).find('li.dd-item .form-group').addClass('my-handle').css('cursor','move');
+    $(this).find('ol.dd-list').css({'cursor':'move','border':'1px dashed #2ea8e5','padding':'5px'})
+    .find('.form-group').addClass('my-handle');
 });
+$('.input-group .input-group-btn').siblings().dblclick(function(){
+    return false;//block numbox click
+});
+
 EOT;
         Admin::script($script);
     }
