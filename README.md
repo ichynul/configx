@@ -91,7 +91,7 @@ this will save a config named _ _ configx _ _ like this ：
 
 you can copy it to json-eidtor and change it .
 
-Double click any area of form to sort configs.
+Double click any area of form to sort the configs witch in the same group. (双击表单界面进入排序模式，可对同一分组下的配置排序)
 
 The keys will start with tab-keys in config :
 
@@ -126,6 +126,8 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'datetime' => '日期时间',
             'image' => '图片',
             'multiple_image' => '多图',
+            'file' => '文件',
+            'multiple_file' => '多文件',
             'yes_or_no' => '是或否',
             'editor' => '编辑器',
             'radio_group' => '单选框组',

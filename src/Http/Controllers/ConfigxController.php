@@ -9,25 +9,29 @@ use Encore\Admin\Config\Config;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Form\Field\Date;
+use Encore\Admin\Form\Field\File;
+use Encore\Admin\Form\Field\Icon;
 use Encore\Admin\Form\Field\Rate;
+use Encore\Admin\Form\Field\Tags;
 use Encore\Admin\Form\Field\Text;
 use Encore\Admin\Form\Field\Time;
 use Ichynul\Configx\ConfigxModel;
+use Encore\Admin\Form\Field\Color;
 use Encore\Admin\Form\Field\Image;
-use Encore\Admin\Form\Field\MultipleImage;
 use Encore\Admin\Form\Field\Radio;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\MessageBag;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Form\Field\Number;
 use Encore\Admin\Form\Field\Select;
+use Illuminate\Validation\Validator;
 use Encore\Admin\Form\Field\Checkbox;
 use Encore\Admin\Form\Field\Datetime;
 use Encore\Admin\Form\Field\Textarea;
-use Encore\Admin\Form\Field\Tags;
-use Encore\Admin\Form\Field\Icon;
-use Encore\Admin\Form\Field\Color;
 use Encore\Admin\Widgets\Tab as Wtab;
 use Illuminate\Support\Facades\Session;
+use Encore\Admin\Form\Field\MultipleFile;
+use Encore\Admin\Form\Field\MultipleImage;
 
 class ConfigxController extends Controller
 {
@@ -97,6 +101,7 @@ class ConfigxController extends Controller
             $configx_options = $this->createConfigx();
         }
         \DB::beginTransaction();
+        Session::put('tabindex', $request->input('tabindex', 0));
         foreach ($request->values as $key => $value) {
             if (in_array($key, ['c_type', 'c_element', 'c_name', 'c_options'])) {
                 continue;
@@ -105,13 +110,30 @@ class ConfigxController extends Controller
             $config = ConfigxModel::findOrFail($id);
             if (isset($cx_options[$config['name']])) {
                 $etype = $cx_options[$config['name']]['element'];
+                $label = trans('admin.configx.' . $config['name']);
                 if ($etype == 'image') {
-                    $rowname = 'values.c_' . $config['id'];
-                    $field = new Image($rowname, ['']);
+                    $field = new Image($key, [$label]);
+                    $validator = $field->getValidator([$key => $value]);
+                    if ($validator->fails()) {
+                        $msg = $validator->errors()->first();
+                        admin_toastr($msg ? : 'Image error', 'error');
+                        return redirect()->back();
+                    }
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_image') {
-                    $rowname = 'values.c_' . $config['id'];
-                    $field = new MultipleImage($rowname, ['']);
+                    $field = new MultipleImage($key, [$label]);
+                    $validator = $field->getValidator([$key => $value]);
+                    if ($validator->fails()) {
+                        $msg = $validator->errors()->first();
+                        admin_toastr($msg ? preg_replace('/c.\d+/i', $label, $msg) : 'Image error', 'error');
+                        return redirect()->back();
+                    }
+                    $value = implode(',', $field->prepare($value));
+                } else if ($etype == 'file') {
+                    $field = new File($key, [$label]);
+                    $value = $field->prepare($value);
+                } else if ($etype == 'multiple_file') {
+                    $validator = $field = new MultipleFile($key, [$label]);
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags') {
                     $value = implode(',', $value);
@@ -172,8 +194,16 @@ class ConfigxController extends Controller
         }
         $configx_options['description'] = json_encode($cx_options);
         $configx_options->save();
-        Session::put('tabindex', $request->input('tabindex', 0));
         return redirect()->back();
+    }
+
+    protected function mergeValidationMessages($validators)
+    {
+        $messageBag = new MessageBag();
+        foreach ($validators as $validator) {
+            $messageBag = $messageBag->merge($validator->messages());
+        }
+        return $messageBag;
     }
 
     public function sort(Request $request)
@@ -218,7 +248,7 @@ class ConfigxController extends Controller
             $field = new Text($rowname, [$label]);
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
-            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'multiple_image', 'yes_or_no', 'rate', 'editor', 'tags', 'icon', 'color', 'number', 'textarea', 'radio_group', 'checkbox_group', 'select'];
+            $elements = ['normal', 'date', 'time', 'datetime', 'image', 'multiple_image', 'file', 'multiple_file', 'yes_or_no', 'rate', 'editor', 'tags', 'icon', 'color', 'number', 'textarea', 'radio_group', 'checkbox_group', 'select'];
             $support = [];
             foreach ($elements as $el) {
                 $support[$el] = trans('admin.configx.element.' . $el);
@@ -243,84 +273,8 @@ class ConfigxController extends Controller
                     $field = new Text($rowname, [$label]);
                     $field->value($val['value']);
                 } else {
-                    $etype = $cx_options[$val['name']]['element'];
-                    if ($etype == 'image') {
-                        $field = new Image($rowname, [$label]);
-                    } else if ($etype == 'multiple_image') {
-                        $field = new MultipleImage($rowname, [$label]);
-                        $field->removable();
-                    } else if ($etype == 'textarea') {
-                        $field = new Textarea($rowname, [$label]);
-                        if (isset($cx_options[$val['name']]['options']['rows'])) {
-                            $field->rows($cx_options[$val['name']]['options']['rows']);
-                        }
-                    } else if ($etype == 'date') {
-                        $field = new Date($rowname, [$label]);
-                    } else if ($etype == 'time') {
-                        $field = new Time($rowname, [$label]);
-                    } else if ($etype == 'datetime') {
-                        $field = new Datetime($rowname, [$label]);
-                    } else if ($etype == 'yes_or_no') {
-                        $field = new Radio($rowname, [$label]);
-                        $field->options(['1' => trans('admin.yes'), '0' => trans('admin.no')]);
-                    } else if ($etype == 'editor') {
-                        if (!isset(Form::$availableFields['editor'])) {
-                            admin_toastr('The editor is unuseable !', 'warning');
-                            $field = new Textarea($rowname, [$label]);
-                        } else {
-                            $field = new Form::$availableFields['editor']($rowname, [$label]);
-                        }
-                    } else if ($etype == 'number') {
-                        $field = new Number($rowname, [$label]);
-                        if (isset($cx_options[$val['name']]['options']['max'])) {
-                            $field->max($cx_options[$val['name']]['options']['max']);
-                        }
-                        if (isset($cx_options[$val['name']]['options']['min'])) {
-                            $field->min($cx_options[$val['name']]['options']['min']);
-                        }
-                    } else if ($etype == 'rate') {
-                        $field = new Rate($rowname, [$label]);
-                    } else if ($etype == 'radio_group') {
-                        $field = new Radio($rowname, [$label]);
-                        $field->options($cx_options[$val['name']]['options']);
-                    } else if ($etype == 'checkbox_group') {
-                        $field = new Checkbox($rowname, [$label]);
-                        $field->options($cx_options[$val['name']]['options']);
-                    } else if ($etype == 'select') {
-                        $field = new Select($rowname, [$label]);
-                        if (isset($cx_options[$val['name']]['options']['options_url'])) {
-                            $field->options($cx_options[$val['name']]['options']['options_url']);
-                        }
-                        else
-                        {
-                            $field->options($cx_options[$val['name']]['options']);
-                        }
-                    } else if ($etype == 'tags') {
-                        $field = new Tags($rowname, [$label]);
-                        $field->options($cx_options[$val['name']]['options']);
-                    } else if ($etype == 'icon') {
-                        $field = new Icon($rowname, [$label]);
-                        $field->options($cx_options[$val['name']]['options']);
-                    } else if ($etype == 'color') {
-                        $field = new Color($rowname, [$label]);
-                        $field->options($cx_options[$val['name']]['options']);
-                    } else {
-                        $field = new Text($rowname, [$label]);
-                    }
-                    if ($etype == 'checkbox_group' || $etype == 'tags') {
-                        $val['value'] = preg_replace('/,$/', '', $val['value']);
-                        $field->value(explode(',', $val['value']));
-                    } else if ($etype == 'multiple_image') {
-                        $val['value'] = preg_replace('/,$/', '', $val['value']);
-                        $images = explode(',', $val['value']);
-                        if ($val['value'] && count($images)) {
-                            $field->value($images);
-                        }
-                    } else {
-                        $field->value($val['value']);
-                    }
+                    $field = $this->getConfigField($cx_options, $val, $rowname, $label);
                 }
-
             } else {
                 $field = new Text($rowname, [$label]);
                 $field->value($val['value']);
@@ -332,6 +286,90 @@ class ConfigxController extends Controller
         $html .= $field->render();
         $html .= '</li>';
         return $html;
+    }
+
+    protected function getConfigField($cx_options, $val, $rowname, $label)
+    {
+        $etype = $cx_options[$val['name']]['element'];
+        if ($etype == 'image') {
+            $field = new Image($rowname, [$label]);
+        } else if ($etype == 'multiple_image') {
+            $field = new MultipleImage($rowname, [$label]);
+            $field->removable();
+        } else if ($etype == 'file') {
+            $field = new File($rowname, [$label]);
+        } else if ($etype == 'multiple_file') {
+            $field = new MultipleFile($rowname, [$label]);
+            $field->removable();
+        } else if ($etype == 'textarea') {
+            $field = new Textarea($rowname, [$label]);
+            if (isset($cx_options[$val['name']]['options']['rows'])) {
+                $field->rows($cx_options[$val['name']]['options']['rows']);
+            }
+        } else if ($etype == 'date') {
+            $field = new Date($rowname, [$label]);
+        } else if ($etype == 'time') {
+            $field = new Time($rowname, [$label]);
+        } else if ($etype == 'datetime') {
+            $field = new Datetime($rowname, [$label]);
+        } else if ($etype == 'yes_or_no') {
+            $field = new Radio($rowname, [$label]);
+            $field->options(['1' => trans('admin.yes'), '0' => trans('admin.no')]);
+        } else if ($etype == 'editor') {
+            if (!isset(Form::$availableFields['editor'])) {
+                admin_toastr('The editor is unuseable!', 'warning');
+                $field = new Textarea($rowname, [$label]);
+            } else {
+                $field = new Form::$availableFields['editor']($rowname, [$label]);
+            }
+        } else if ($etype == 'number') {
+            $field = new Number($rowname, [$label]);
+            if (isset($cx_options[$val['name']]['options']['max'])) {
+                $field->max($cx_options[$val['name']]['options']['max']);
+            }
+            if (isset($cx_options[$val['name']]['options']['min'])) {
+                $field->min($cx_options[$val['name']]['options']['min']);
+            }
+        } else if ($etype == 'rate') {
+            $field = new Rate($rowname, [$label]);
+        } else if ($etype == 'radio_group') {
+            $field = new Radio($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
+        } else if ($etype == 'checkbox_group') {
+            $field = new Checkbox($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
+        } else if ($etype == 'select') {
+            $field = new Select($rowname, [$label]);
+            if (isset($cx_options[$val['name']]['options']['options_url'])) {
+                $field->options($cx_options[$val['name']]['options']['options_url']);
+            } else {
+                $field->options($cx_options[$val['name']]['options']);
+            }
+        } else if ($etype == 'tags') {
+            $field = new Tags($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
+        } else if ($etype == 'icon') {
+            $field = new Icon($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
+        } else if ($etype == 'color') {
+            $field = new Color($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
+        } else {
+            $field = new Text($rowname, [$label]);
+        }
+        if ($etype == 'checkbox_group' || $etype == 'tags') {
+            $val['value'] = preg_replace('/,$/', '', $val['value']);
+            $field->value(explode(',', $val['value']));
+        } else if ($etype == 'multiple_image') {
+            $val['value'] = preg_replace('/,$/', '', $val['value']);
+            $images = explode(',', $val['value']);
+            if ($val['value'] && count($images)) {
+                $field->value($images);
+            }
+        } else {
+            $field->value($val['value']);
+        }
+        return $field;
     }
 
     protected function createform($tab)
