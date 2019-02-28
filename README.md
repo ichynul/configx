@@ -1,16 +1,17 @@
-laravel-admin configx
-======
+# laravel-admin configx
 
 ## Installation
 
 need to install laravel-admin-ext/config first, see https://github.com/laravel-admin-extensions/config
 
 Then run :
+
 ```
 $ composer require ichynul/configx
 ```
 
 Then run:
+
 ```
 $ php artisan admin:import configx
 ```
@@ -20,12 +21,13 @@ Add a tabs config in `config/admin.php`:
 ```php
     'extensions' => [
         'configx' => [
-            'config' => [
-                'tabs' => [
-                    'base' => '基本设置',
-                    'shop' => '店铺设置',
-                    'uplaod' => '上传设置'
-                ]
+            // Set to `false` if you want to disable this extension
+            'enable' => true,
+            //
+            'tabs' => [
+                'base' => '基本设置',
+                'shop' => '店铺设置',
+                'uplaod' => '上传设置'
             ]
         ],
     ],
@@ -36,77 +38,70 @@ Add a tabs config in `config/admin.php`:
 
 Open `http://your-host/admin/configx`
 
-## Demo 
+## Demo
 
-you can click "+" to add an new config key :
+You can click "+" to add an new config key :
 
-step 1 select config type from ['base' , 'shop' , 'uplaod']
+step 1 Select config type from `['base' , 'shop' , 'uplaod']`
 
-step 2 select form-element type from ['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group' ,'checkbox_group', 'select'] 
+step 2 Select form-element type from `['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group' ,'checkbox_group', 'select']`... and so on
 
-step 3 if you selected form-element type is ['radio_group' ,'checkbox_group', 'select'] ,you need inupt [options]
+step 3 If you selected form-element type is `['radio_group' ,'checkbox_group', 'select']` ,you need inupt `[options]` :
 
-```html
+```js
+
 just text:
 
-text1
-text2
+    `text1
+    text2`
 ...
 
 and key-text:
 
-key1:text1
-key2:text2
+    `key1:text1
+    key2:text2`
+
+or load from ulr:
+
+    `options_url:/api/mydata`
 
 ```
 
-this will save a config named _ _ configx _ _ like this ：
+If you selected form-element type is `textarea` , you can config it `rows:3` , default is 5.
 
-```json
-{
-    "shop.shipping_compnay":{
-        "options":{
-            "中兴":"中兴",
-            "华为":"华为",
-            "小米":"小米"
-        },
-        "element":"radio_group"
-    },
-    "uplaod.allow_type":{
-        "options":{
-            "png":"png",
-            "jpg":"jpg",
-            "gif":"gif"
-        },
-        "element":"checkbox_group"
-    },
-    "base.site_open":{
-        "options":[
+If you selected form-element type is `table`, `columns / rows` is needed :
 
-        ],
-        "element":"yes_or_no"
-    }
-}
-```
+`columns:c1,c2,c3,c4`
+`rows:r1,r2,r3,r4`
 
-you can copy it to json-eidtor and change it .
+this wiil build a table like below :
+
+|-------------------------------------------
+| r1\c1 |  c2  |  c3  |  c4  |
+|-------------------------------------------
+|   r1  |  
+|-------------------------------------------
+| r2
+|-------------------------------------------
+| r3
+|-------------------------------------------
 
 Double click any area of form to sort the configs witch in the same group. (双击表单界面进入排序模式，可对同一分组下的配置排序)
 
 The keys will start with tab-keys in config :
 
-+ base.site_name
-+ base.site_tel
-+ base.site_logo
-+ base.site_open
-+ ...
-+ shop.shipping_compnay
-+ shop.open_time
-+ shop.open_date
-+ ...
-+ uplaod.size_limit
-+ uplaod.allow_type
-+ ...
+- base.site_name
+- base.site_tel
+- base.site_logo
+- base.site_open
+- ...
+- shop.shipping_compnay
+- shop.open_time
+- shop.open_date
+- ...
+- uplaod.size_limit
+- uplaod.allow_type
+- ...
 
 Add a lang config in `resources/lang/{zh-CN}/admin.php`
 
@@ -115,6 +110,7 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
         'new_config_type' => '新配置类型',
         'new_config_key' => '新配置key',
         'new_config_element' => '新配置表单元素',
+        'new_config_help' => '新配置help',
         'new_config_options' => '新配置扩展项',
         'header' => '网站设置',
         'desc' => '网站设置设置',
@@ -137,7 +133,8 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'select' => '下拉框',
             'tags' => '标签',
             'icon' => '图标',
-            'color' => '颜色'
+            'color' => '颜色',
+            'table' =>'表格'
         ],
         'base' => [
             'site_name' => '网站名称',
@@ -165,5 +162,6 @@ After add config in the panel, use `config($key)` to get value you configured.
 
 License
 
-------------
+---
+
 Licensed under [The MIT License (MIT)](LICENSE).

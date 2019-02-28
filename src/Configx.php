@@ -12,12 +12,6 @@ class Configx extends Extension
 
     public $assets = __DIR__ . '/../resources/assets';
 
-    public $menu = [
-        'title' => 'Configx',
-        'path' => 'configx',
-        'icon' => 'fa-gears',
-    ];
-
     /**
      * {@inheritdoc}
      */
