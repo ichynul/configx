@@ -34,8 +34,6 @@ use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleImage;
 use Illuminate\Support\Facades\Validator as ValidatorTool;
 use function GuzzleHttp\json_encode;
-use function GuzzleHttp\json_decode;
-use PHPUnit\Framework\Constraint\Attribute;
 
 class ConfigxController extends Controller
 {
@@ -51,8 +49,10 @@ class ConfigxController extends Controller
         $config = [];
         if ($id > 0) {
             $config = ConfigxModel::findOrFail($id);
+            $tabs['new_config'] = trans('admin.edit') . '-' . trans('admin.configx.' . $config['name']);
+        } else {
+            $tabs['new_config'] =  "+";
         }
-        $tabs['new_config'] = $id > 0 ? trans('admin.edit') . '-' . trans('admin.configx.' . $config['name']) : "+";
         if (Configx::config('check_permission', false)) {
             $this->createPermissions($tabs);
         }
@@ -62,8 +62,9 @@ class ConfigxController extends Controller
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
         }
+        $tableFields = [];
         foreach ($tabs as $key => $value) {
-            if (Configx::config('check_permission') && !Admin::user()->can('confix.tab.' . $key)) {
+            if (Configx::config('check_permission', false) && !Admin::user()->can('confix.tab.' . $key)) {
                 continue;
             }
             $subs = ConfigxModel::group($key);
@@ -80,11 +81,20 @@ class ConfigxController extends Controller
                 );
             }
             if ($key == 'configx_demo') {
-                $tab->add($value, view('configx::help'), false);
+                $tab->add($value, view('configx::help'), true);
                 continue;
             }
             $formhtml = '';
             foreach ($subs as $val) {
+                if (isset($cx_options[$val['name']]) && isset($cx_options[$val['name']]['table_field'])) {
+                    if ($cx_options && isset($cx_options[$val['name']])) {
+                        $val['etype'] = $cx_options[$val['name']]['element'];
+                    } else {
+                        $val['etype'] = 'normal';
+                    }
+                    $tableFields[$val['name']] = $val;
+                    continue;
+                }
                 $formhtml .= $this->createField($val, $tabs, $cx_options, $config);
                 if ($key != 'new_config') {
                     if ($cx_options && isset($cx_options[$val['name']])) {
@@ -95,9 +105,12 @@ class ConfigxController extends Controller
                     $tree[$value][] = $val;
                 }
             }
-
             if ($key == 'new_config') {
-                $tab->add($value, '<div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree)  . '</div>', false);
+                if ($id > 0) {
+                    $tab->add($value, '<a href="' . admin_base_path('configx/edit') . '" style="color:#999;position:absolute;top:15px;right:25px;">' . trans('admin.back') . '&nbsp;<i class="fa fa-times"></i></a><div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields)  . '</div>', false);
+                } else {
+                    $tab->add($value, '<div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields)  . '</div>', false);
+                }
             } else if ($id == 0) {
                 $tab->add($value,  '<div class="row">' . $formhtml . '</div>', false);
             }
@@ -107,10 +120,14 @@ class ConfigxController extends Controller
             ->header(trans('admin.configx.header'))
             ->description(trans('admin.configx.desc'))
             ->breadcrumb(
-                ['text' => trans('admin.configx.header'), 'url' => '']
+                ['text' => trans('admin.configx.header'), 'url' => 'configx/edit'],
+                ['text' => trans('admin.configx.desc')]
             )
             ->row('<div style="background-color:#fff;">' . $form . '</div>')
-            ->row(view('configx::script', ['call_back' => admin_base_path('configx/sort'), 'del_url' => admin_base_path('config')]));
+            ->row(view(
+                'configx::script',
+                ['call_back' => admin_base_path('configx/sort'), 'del_url' => admin_base_path('config')]
+            ));
     }
 
     protected function createPermissions($tabs)
@@ -123,20 +140,35 @@ class ConfigxController extends Controller
         }
     }
 
-    protected function buildTree($tree)
+    protected function buildTree($tree, $tableFields)
     {
-        $treeHtml = '<div class="col-sm-3">
-                     <div class="row">';
-
+        $treeHtml = '<div class="col-sm-3"><div class="row">';
         $i = 1;
         foreach ($tree as $k => $v) {
             $treeHtml .= '<label class="control-label"><i class="fa fa-plus-square-o"></i>&nbsp;' . $k . '</label>';
             if (count($v)) {
                 $treeHtml .= '<div class="dd"><ol class="dd-list">';
                 foreach ($v as $c) {
-                    $treeHtml .= '<li class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag label label-default"><i class="fa fa-arrows"></i>&nbsp;' . trans('admin.configx.' . $c['name']) . '</span>'
-                        . '<a title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><span style="margin-left:5px;" class="pull-right dd-nodrag label label-danger"><i class="fa fa-trash-o"></i>&nbsp;' . trans('admin.delete') . '</span></a>'
-                        . '<a title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><span class="pull-right dd-nodrag label label-info"><i class="fa fa-edit"></i>&nbsp;' . trans('admin.configx.element.' . $c['etype']) . '</span></a>'
+                    $tfieldsHtml = '';
+                    if ($c['etype'] == 'table') {
+                        $tableInfo = json_decode($c['description'], 1);
+                        if ($tableInfo) {
+                            $tfieldsHtml .= '<ul class="dd-list">';
+                            foreach ($tableInfo as $k => $v) {
+                                if (!isset($tableFields[$k])) {
+                                    continue;
+                                }
+                                $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . trans('admin.configx.' . $k) . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
+                                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
+                                    . '</li>';
+                            }
+                            $tfieldsHtml .= '</ul>';
+                        }
+                    }
+                    $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . trans('admin.configx.' . $c['name']) . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
+                        . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
+                        . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
+                        .  $tfieldsHtml
                         . '</li>';
                 }
                 $treeHtml .= '</ol></div>';
@@ -144,13 +176,12 @@ class ConfigxController extends Controller
             $i += 1;
         }
 
-        $treeHtml .= '</div>
-                      </div>';
+        $treeHtml .= '</div></div>';
 
         return $treeHtml;
     }
 
-    protected function createTableConfigs($tableInfo)
+    protected function createTableConfigs($tableInfo, $cx_options)
     {
         if (empty($tableInfo)) {
             return;
@@ -159,10 +190,21 @@ class ConfigxController extends Controller
             if ($k == $v) {
                 $conf =  ConfigxModel::where('name', $k)->first();
                 if (!$conf) {
-                    ConfigxModel::create(['name' => $k, 'value' => '1', 'description' => $k]);
+                    ConfigxModel::create(['name' => $k, 'value' => '1', 'description' => 'Table field:' . $k]);
+                }
+            }
+            if (!isset($cx_options[$k])) {
+                $cx_options[$k] = ['element' => 'normal', 'options' => [], 'help' => '', 'order' => 999];
+            }
+            if ($k == $v) {
+                $cx_options[$k]['table_field'] = 1;
+            } else {
+                if (isset($cx_options[$k]['table_field'])) {
+                    array_forget($cx_options[$k], 'table_field');
                 }
             }
         }
+        return $cx_options;
     }
 
     protected function sortConfig($configs, $cx_options)
@@ -193,13 +235,14 @@ class ConfigxController extends Controller
         }
         $cx_options = $this->saveValues($request, $cx_options);
 
-        if (!empty($request->values['c_type']) && !empty($request->values['c_name']) || $id > 0) {
+        if ((!empty($request->values['c_type']) && !empty($request->values['c_name'])) || $id > 0) {
             $config = [];
             $defaultVal = "1";
-            $new_key = $request->values['c_name'];
             if ($id > 0) {
                 $config = ConfigxModel::findOrFail($id);
+                $new_key = $config['name'];
             } else {
+                $new_key = $request->values['c_name'];
                 if ($request->values['c_type'] == 'configx_demo') {
                     admin_error('Error', "You need to add coings in [/config/admin.php] first!.");
                     return redirect()->back()->withInput();
@@ -221,10 +264,9 @@ class ConfigxController extends Controller
                     $defaultVal = "#ccc";
                 } else if ($request->values['c_element'] == "multiple_image") {
                     $defaultVal = '-';
-                } else if ($request->values['c_element'] == "table") {
-                    $defaultVal = 'do not delete';
                 }
             }
+            $table_field = isset($cx_options[$new_key]['table_field']);
             if (!empty($request->values['c_options'] && in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table']))) {
                 $c_options = explode(PHP_EOL, $request->values['c_options']);
                 $arr = [];
@@ -238,7 +280,9 @@ class ConfigxController extends Controller
                 }
                 $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element'], 'help' => $request->values['c_help'], 'order' => 999];
                 $keys = array_keys($arr);
-                if ($keys) {
+                if ($request->values['c_element'] == "table") {
+                    $defaultVal = 'do not delete';
+                } else   if ($keys) {
                     $defaultVal = $keys[0];
                 }
             } else {
@@ -256,7 +300,7 @@ class ConfigxController extends Controller
             if ($id == 0) {
                 $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['c_help'] ?: trans('admin.configx.' . $new_key)];
                 if ($request->values['c_element'] == "table") {
-                    $this->createTableConfigs($request->table);
+                    $cx_options =  $this->createTableConfigs($request->table, $cx_options);
                     $data['description'] = json_encode($request->table);
                 }
                 $config = new ConfigxModel($data);
@@ -265,7 +309,7 @@ class ConfigxController extends Controller
             } else {
                 $data = ['name' => $new_key];
                 if ($request->values['c_element'] == "table") {
-                    $this->createTableConfigs($request->table);
+                    $cx_options = $this->createTableConfigs($request->table, $cx_options);
                     $data['description'] = json_encode($request->table);
                 }
                 $config->update($data);
@@ -282,6 +326,9 @@ class ConfigxController extends Controller
                     $i += 1;
                 }
             }
+            if ($table_field) {
+                $cx_options[$new_key]['table_field'] = 1;
+            }
             admin_toastr(trans('admin.save_succeeded'));
         } else {
             admin_toastr(trans('admin.update_succeeded'));
@@ -292,7 +339,7 @@ class ConfigxController extends Controller
         if (!$this->validator->passes()) {
             return redirect()->to(admin_base_path('configx/edit'))->withErrors($this->validator->messages())->withInput();
         } else {
-            return redirect()->to(admin_base_path('configx/edit'));
+            return redirect()->to(admin_base_path('configx/edit/' . $id));
         }
     }
 
@@ -438,10 +485,15 @@ class ConfigxController extends Controller
                 $field->options($tabs)->setWidth(10, 2);
             }
         } else if ($val['id'] == 'name') {
-            $field = new Text($rowname, [$label]);
-            $field->setWidth(10, 2);
-            if ($config) {
-                $field->value($editName);
+
+            if ($config && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
+                $field = new Html('<label class="form-control">' . $editName . '</label>', [$label]);
+            } else {
+                $field = new Text($rowname, [$label]);
+                $field->setWidth(10, 2);
+                if ($config) {
+                    $field->value($editName);
+                }
             }
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
@@ -452,6 +504,9 @@ class ConfigxController extends Controller
                 //
                 , 'textarea', 'radio_group', 'checkbox_group', 'select'
             ];
+            if ($config && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
+                array_delete($elements, 'table');
+            }
             $support = [];
             foreach ($elements as $el) {
                 $support[$el] = trans('admin.configx.element.' . $el);
@@ -578,7 +633,7 @@ class ConfigxController extends Controller
             ) {
                 $tableInfo = json_decode($val['description'], 1);
                 if ($tableInfo) {
-                    $this->createTableConfigs($tableInfo);
+                    $this->createTableConfigs($tableInfo, []);
                 }
                 $field = new Table($label);
                 $rows = [];
@@ -587,13 +642,21 @@ class ConfigxController extends Controller
                     for ($j = 0; $j < $cx_options[$val['name']]['options']['cols']; $j += 1) {
                         $fieldKey = $val['name'] . '_' . $i . '_' . $j;
                         if ($tableInfo[$fieldKey] == $fieldKey) {
+                            $label = trans($fieldKey);
+                            /*
                             if ($cx_options[$val['name']]['options']['cols'] <= 4) {
-                                $tableRow->text($fieldKey, $fieldKey);
+                                $tableRow->text($fieldKey, $label);
                             } else {
-                                $tableRow->textSmall($fieldKey, $fieldKey);
+                                $tableRow->textSmall($fieldKey, $label);
+                            }*/
+                            $conf =  ConfigxModel::where('name', $fieldKey)->first();
+                            if ($conf) {
+                                $rowname = 'values.c_' . $conf['id'];
+                                $tableField = $this->getConfigField($cx_options, $conf, $rowname, $label);
+                                $tableRow->pushField($tableField, 1);
                             }
                         } else {
-                            $tableRow->show($tableInfo[$fieldKey])->Textalign('left');
+                            $tableRow->show($tableInfo[$fieldKey])->Textalign('center');
                         }
                     }
                     $rows[] = $tableRow;

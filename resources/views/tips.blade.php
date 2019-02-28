@@ -67,7 +67,7 @@
     function createTable() {
         var text = $("textarea[name='values[c_options]']").val();
         if (text == '') {
-            text = "rows:4\ncols:4";
+            text = "rows:3\ncols:3";
             $("textarea[name='values[c_options]']").val(text);
         }
         var arr = text.split(/[\r\n]/);
