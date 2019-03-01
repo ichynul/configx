@@ -267,7 +267,7 @@ class ConfigxController extends Controller
                 }
             }
             $table_field = isset($cx_options[$new_key]['table_field']);
-            if (!empty($request->values['c_options'] && in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table']))) {
+            if (!empty($request->values['c_options'] && in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number']))) {
                 $c_options = explode(PHP_EOL, $request->values['c_options']);
                 $arr = [];
                 foreach ($c_options as $op) {
