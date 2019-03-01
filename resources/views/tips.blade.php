@@ -99,7 +99,7 @@
                     if (i == 0 && j == 0) {
                         buildGrid[fieldKey] = 'r_label\\ c_label';
                     } else if (i == 0) {
-                        buildGrid[fieldKey] = 'r_label' + j;
+                        buildGrid[fieldKey] = 'c_label' + j;
                     } else if (j == 0) {
                         buildGrid[fieldKey] = 'r_label' + i;
                     } else {

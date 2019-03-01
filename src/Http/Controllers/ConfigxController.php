@@ -107,7 +107,7 @@ class ConfigxController extends Controller
             }
             if ($key == 'new_config') {
                 if ($id > 0) {
-                    $tab->add($value, '<a href="' . admin_base_path('configx/edit') . '" style="color:#999;position:absolute;top:15px;right:25px;">' . trans('admin.back') . '&nbsp;<i class="fa fa-times"></i></a><div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields)  . '</div>', false);
+                    $tab->add($value, '<a title="' . trans('admin.back') . '" href="' . admin_base_path('configx/edit') . '" style="color:#999;position:absolute;top:15px;right:25px;"><i class="fa fa-times"></i>' . '</a><div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields)  . '</div>', false);
                 } else {
                     $tab->add($value, '<div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields)  . '</div>', false);
                 }
@@ -543,7 +543,7 @@ class ConfigxController extends Controller
                     if ($k == $v) {
                         $arr[] = $k;
                     } else {
-                        $arr[] = $k . ':' . $v;
+                        $arr[] = $k . '  :  ' . $v;
                     }
                 }
                 $field->value(implode(PHP_EOL, $arr));
@@ -643,12 +643,6 @@ class ConfigxController extends Controller
                         $fieldKey = $val['name'] . '_' . $i . '_' . $j;
                         if ($tableInfo[$fieldKey] == $fieldKey) {
                             $label = trans($fieldKey);
-                            /*
-                            if ($cx_options[$val['name']]['options']['cols'] <= 4) {
-                                $tableRow->text($fieldKey, $label);
-                            } else {
-                                $tableRow->textSmall($fieldKey, $label);
-                            }*/
                             $conf =  ConfigxModel::where('name', $fieldKey)->first();
                             if ($conf) {
                                 $rowname = 'values.c_' . $conf['id'];
@@ -683,13 +677,13 @@ class ConfigxController extends Controller
         }
         if (isset($cx_options[$val['name']]['options']) && !empty($cx_options[$val['name']]['help'])) {
             if ($etype == 'editor' && !isset(Form::$availableFields['editor'])) {
-                $field->help('<span class="label label-danger">The editor is unuseable!</span><br />' . $cx_options[$val['name']]['help']);
+                $field->help('<span class="label label-warning">The editor is unuseable!</span><br />' . $cx_options[$val['name']]['help']);
             } else {
                 $field->help($cx_options[$val['name']]['help']);
             }
         } else {
             if ($etype == 'editor' && !isset(Form::$availableFields['editor'])) {
-                $field->help('The editor is unuseable!');
+                $field->help('<span class="label label-warning">The editor is unuseable!</span>');
             }
         }
         return $field;

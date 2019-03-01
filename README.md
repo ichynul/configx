@@ -69,22 +69,56 @@ or load from ulr:
 
 If you selected form-element type is `textarea` , you can config it `rows:3` , default is 5.
 
-If you selected form-element type is `table`, `columns / rows` is needed :
+If you selected form-element type is `table`, `rows / cols` is needed :
 
-`columns:c1,c2,c3,c4`
-`rows:r1,r2,r3,r4`
+`base.some_key`
 
-this wiil build a table like below :
+`rows : 4`
+`cols : 4`
 
-|-------------------------------------------
-| r1\c1 |  c2  |  c3  |  c4  |
-|-------------------------------------------
-|   r1  |  
-|-------------------------------------------
-| r2
-|-------------------------------------------
-| r3
-|-------------------------------------------
+This wiil build a table like below :
+
+```php
+/*
+|-------------------------------------------------------------------------------------
+|  r_label\ c_labe |       c_label1      |        c_label2     |      c_label3       |  ⬅Col labels
+|-------------------------------------------------------------------------------------
+|     r_label1     |  base.some_key_1_1  |  base.some_key_1_2  |  base.some_key_1_3  |
+|-------------------------------------------------------------------------------------
+|     r_label2     |  base.some_key_2_1  |  base.some_key_2_2  |  base.some_key_2_3  |
+|-------------------------------------------------------------------------------------
+|     r_label3     |  base.some_key_3_1  |  base.some_key_3_2  |  base.some_key_3_3  |
+|-------------------------------------------------------------------------------------
+        ↑
+    Ros labels
+
+You can edit labels as you want.
+
+Each <td> has a key , base.some_key_[0]_[0] to base.some_key_[rows-1]_[cols-1] . (from 0 to length -1 )
+
+So, you can chang a label <td> to input :
+
+|-------------------------------------------------------------------------------------
+|  r_label\ c_labe |       c_label1      |        c_label2     |  base.some_key_0_3  |  ⬅ [c_label3 change] to [base.some_key_0_3] , we can input here .
+|-------------------------------------------------------------------------------------     (可以把label 换成输入元素)
+|     r_label1     |  base.some_key_1_1  |  base.some_key_1_2  |  base.some_key_1_3  |
+|-------------------------------------------------------------------------------------
+|     r_label2     |  base.some_key_2_1  |  base.some_key_2_2  |  base.some_key_2_3  |
+|-------------------------------------------------------------------------------------
+|     r_label3     |  base.some_key_3_1  |     hello world!    |  base.some_key_3_3  |
+|-------------------------------------------------------------------------------------
+                                                    ↑
+                                    [base.some_key_3_2] change to [hello world!]
+                                        , we can not input here any more ,
+                                     it wiil just show label text 'hello world!' .
+                                        (也可以把输入元素换成仅显示文字)
+
+note : if text = key ,render as input form element , otherwise just show the text you leave.
+
+总结 : 如果输入的字符串与td默认key一样，这个位置将是一个可输入的表单元素，否则就显示原样你输入的字符串 .
+
+*/
+```
 
 Double click any area of form to sort the configs witch in the same group. (双击表单界面进入排序模式，可对同一分组下的配置排序)
 
