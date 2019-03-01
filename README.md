@@ -72,9 +72,10 @@ If you selected form-element type is `textarea` , you can config it `rows:3` , d
 If you selected form-element type is `table`, `rows / cols` is needed :
 
 `base.some_key`
-
-`rows : 4`
-`cols : 4`
+```js
+rows : 4
+cols : 4
+```
 
 This wiil build a table like below :
 
@@ -99,9 +100,9 @@ Each <td> has a key , base.some_key_[0]_[0] to base.some_key_[rows-1]_[cols-1] .
 So, you can chang a label <td> to input :
 
 |-------------------------------------------------------------------------------------
-|  r_label\ c_labe |       c_label1      |        c_label2     |  base.some_key_0_3  |  ⬅ [c_label3 change] to [base.some_key_0_3] , we can input here .
-|-------------------------------------------------------------------------------------     (可以把label 换成输入元素)
-|     r_label1     |  base.some_key_1_1  |  base.some_key_1_2  |  base.some_key_1_3  |
+|  r_label\ c_labe |       c_label1      |        c_label2     |  base.some_key_0_3  |  ⬅ [c_label3 change] to [base.some_key_0_3]
+|-------------------------------------------------------------------------------------     , we can input here .
+|     r_label1     |  base.some_key_1_1  |  base.some_key_1_2  |  base.some_key_1_3  |      (可以把label 换成输入元素)
 |-------------------------------------------------------------------------------------
 |     r_label2     |  base.some_key_2_1  |  base.some_key_2_2  |  base.some_key_2_3  |
 |-------------------------------------------------------------------------------------
