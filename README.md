@@ -28,7 +28,9 @@ Add a tabs config in `config/admin.php`:
                 'base' => '基本设置',
                 'shop' => '店铺设置',
                 'uplaod' => '上传设置'
-            ]
+            ],
+            // Whether check group permissions. if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
+            'check_permission' => false
         ],
     ],
 
@@ -48,24 +50,20 @@ step 2 Select form-element type from `['normal', 'date', 'time', 'datetime', 'im
 
 step 3 If you selected form-element type is `['radio_group' ,'checkbox_group', 'select']` ,you need inupt `[options]` :
 
-```js
-
 just text:
 
-    `text1
-    text2`
+`text1`
+`text2`
 ...
 
 and key-text:
 
-    `key1:text1
-    key2:text2`
+`key1 : text1`
+`key2 : text2`
 
 or load from ulr:
 
-    `options_url:/api/mydata`
-
-```
+`options_url:/api/mydata`
 
 If you selected form-element type is `textarea` , you can config it `rows:3` , default is 5.
 
