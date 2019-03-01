@@ -51,16 +51,18 @@ step 2 Select form-element type from `['normal', 'date', 'time', 'datetime', 'im
 step 3 If you selected form-element type is `['radio_group' ,'checkbox_group', 'select']` ,you need inupt `[options]` :
 
 just text:
-
-`text1`
-`text2`
+```js
+text1
+text2
 ...
+```
 
 and key-text:
-
-`key1 : text1`
-`key2 : text2`
-
+```js
+key1 : text1
+key2 : text2
+...
+```
 or load from ulr:
 
 `options_url:/api/mydata`
