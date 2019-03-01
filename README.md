@@ -121,8 +121,6 @@ note : if text = key ,render as input form element , otherwise just show the tex
 */
 ```
 
-Double click any area of form to sort the configs witch in the same group. (双击表单界面进入排序模式，可对同一分组下的配置排序)
-
 The keys will start with tab-keys in config :
 
 - base.site_name
