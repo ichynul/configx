@@ -18,6 +18,7 @@
         <div class="row" id="table-div" style="margin-top:10px;">
 
         </div>
+        <code id="field-tip">&nbsp;</code>
     </div>
     <textarea class="hidden" id="saved-table">{{ json_encode($table) }}</textarea>
 </div>
@@ -27,17 +28,36 @@
         $("body").on("ifChecked", "input:radio[name='values[c_element]']", function () {
             typeChange(this.value);
         });
-        $("body").on("change", "input.table-field", function () {
+
+        $("body").on("keyup", "input.table-field", function () {
             buildGrid[$(this).attr('data-key')] = $(this).val();
+            getTdType($(this));
+        });
+
+        $("body").on("focus", "input.table-field", function () {
+            getTdType($(this));
         });
 
         typeChange($("input:radio[name='values[c_element]']:checked").val());
+
         var saved_table = $('#saved-table').val();
         if (/^\{.+\}$/.test(saved_table)) {
             buildGrid = JSON.parse(saved_table) || {};
             createTable();
         }
     });
+
+    function getTdType(el) {
+        var key = el.attr('data-key');
+        var val = el.val();
+        if (key == val) {
+            $('#field-tip').html(key + '&nbsp;:&nbsp;render as input element.');
+            el.css('color', '#666');
+        } else {
+            $('#field-tip').html(key + '&nbsp;:&nbsp;just show text \"' + val+'\".');
+            el.css('color', '#000');
+        }
+    }
 
     function typeChange(value) {
         $('div.elem').addClass('hidden');
@@ -106,8 +126,14 @@
                         buildGrid[fieldKey] = fieldKey;
                     }
                 }
+
+                if (fieldKey == buildGrid[fieldKey]) {
+                    var style = tdstyle + 'color:#666;';
+                } else {
+                    var style = tdstyle + 'color:#000;';
+                }
                 html += '<td style="border:1px solid #999;"><input data-key="' + fieldKey +
-                    '" class="table-field" style="' + tdstyle +
+                    '" class="table-field" style="' + style +
                     '" name="table[' +
                     fieldKey +
                     ']" type="text" value="' + buildGrid[fieldKey] + '" placeholder="' + fieldKey + '" /></td>';
