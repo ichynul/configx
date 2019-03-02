@@ -42,10 +42,10 @@ class ConfigxController extends Controller
     public function edit($id = 0, Content $content)
     {
         $configx_options = ConfigxModel::where('name', '__configx__')->first();
-        $tabs = Configx::config('tabs', [
-            'configx_demo' => 'config tabs in /config/admin.php',
-        ]);
-
+        $tabs = Configx::config('tabs', []);
+        if (empty($tabs)) {
+            $tabs = ['configx_demo' => 'config tabs in /config/admin.php'];
+        }
         $config = [];
         if ($id > 0) {
             $config = ConfigxModel::findOrFail($id);
@@ -244,7 +244,7 @@ class ConfigxController extends Controller
             } else {
                 $new_key = $request->values['c_name'];
                 if ($request->values['c_type'] == 'configx_demo') {
-                    admin_error('Error', "You need to add coings in [/config/admin.php] first!.");
+                    admin_error('Error', "You need to add configs in [/config/admin.php] first!.");
                     return redirect()->back()->withInput();
                 }
                 if (!preg_match('/^' . $request->values['c_type'] . '\.\w{1,}/', $new_key)) {
