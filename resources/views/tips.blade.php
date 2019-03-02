@@ -12,6 +12,12 @@
     <div class="elem number_elem col-sm-12">
         <pre>max : 100<br/>min : 1</pre>
     </div>
+    <div class="elem color_elem col-sm-12">
+        <pre>format : rgba<br/><br/>[hex,rgb,rgba]</pre>
+    </div>
+    <div class="elem map_elem col-sm-12">
+        <pre>To use map ,you need to edit configs first.<br/><br/>map_provider in /config/admin.php<br/><br/>TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env</pre>
+    </div>
     <div class="elem table_elem col-sm-12">
         <pre>rows : 3<br/>cols : 3</pre>
         <span style="text-align:right;" class="btn btn-success" onclick="createTable();">Build table</span>
@@ -54,7 +60,7 @@
             $('#field-tip').html(key + '&nbsp;:&nbsp;render as input element.');
             el.css('color', '#666');
         } else {
-            $('#field-tip').html(key + '&nbsp;:&nbsp;just show text \"' + val+'\".');
+            $('#field-tip').html(key + '&nbsp;:&nbsp;just show text \"' + val + '\".');
             el.css('color', '#000');
         }
     }
@@ -63,14 +69,21 @@
         $('div.elem').addClass('hidden');
         if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' ||
             value == 'textarea' || value == 'table' ||
-            value == 'number') {
+            value == 'number' || value == 'color' || value == 'multiple_select' || value == 'listbox' || value == 'map'
+        ) {
             $(".option-list").removeClass('hidden');
         } else {
             $(".option-list").addClass('hidden');
         }
-        if (value == 'radio_group' || value == 'checkbox_group' || value == 'select') {
+        if (value == 'map') {
+            $("textarea[name='values[c_options]']").addClass('hidden');
+        } else {
+            $("textarea[name='values[c_options]']").removeClass('hidden');
+        }
+        if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' || value == 'multiple_select' ||
+            value == 'listbox') {
             $('.group_elem').removeClass('hidden');
-            if (value == 'select') {
+            if (value == 'select' || value == 'multiple_select') {
                 $('.select_elem').removeClass('hidden');
             } else {
                 $('.select_elem').addClass('hidden');
@@ -79,8 +92,12 @@
             $('.textarea_elem').removeClass('hidden');
         } else if (value == 'number') {
             $('.number_elem').removeClass('hidden');
+        } else if (value == 'color') {
+            $('.color_elem').removeClass('hidden');
         } else if (value == 'table') {
             $('.table_elem').removeClass('hidden');
+        } else if (value == 'map') {
+            $('.map_elem').removeClass('hidden');
         }
     }
 

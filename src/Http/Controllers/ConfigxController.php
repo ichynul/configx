@@ -25,15 +25,18 @@ use Illuminate\Routing\Controller;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Form\Field\Number;
 use Encore\Admin\Form\Field\Select;
+use function GuzzleHttp\json_encode;
 use Encore\Admin\Form\Field\Checkbox;
 use Encore\Admin\Form\Field\Datetime;
+use Encore\Admin\Form\Field\Map;
 use Encore\Admin\Form\Field\Textarea;
 use Encore\Admin\Widgets\Tab as Wtab;
 use Illuminate\Support\Facades\Session;
 use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleImage;
+use Encore\Admin\Form\Field\MultipleSelect;
 use Illuminate\Support\Facades\Validator as ValidatorTool;
-use function GuzzleHttp\json_encode;
+use Encore\Admin\Form\Field\Listbox;
 
 class ConfigxController extends Controller
 {
@@ -267,7 +270,10 @@ class ConfigxController extends Controller
                 }
             }
             $table_field = isset($cx_options[$new_key]['table_field']);
-            if (!empty($request->values['c_options'] && in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number']))) {
+            if (!empty($request->values['c_options'] && in_array(
+                $request->values['c_element'],
+                ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number', 'color', 'multiple_select', 'listbox']
+            ))) {
                 $c_options = explode(PHP_EOL, $request->values['c_options']);
                 $arr = [];
                 foreach ($c_options as $op) {
@@ -286,7 +292,7 @@ class ConfigxController extends Controller
                     $defaultVal = $keys[0];
                 }
             } else {
-                if (in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table'])) {
+                if (in_array($request->values['c_element'], ['radio_group', 'checkbox_group', 'select', 'table', 'multiple_select', 'listbox'])) {
                     admin_error('Error', "The options is empty!");
                     return redirect()->back()->withInput();
                 } else {
@@ -368,7 +374,7 @@ class ConfigxController extends Controller
             if (in_array($key, ['c_type', 'c_element', 'c_help', 'c_name', 'c_options'])) {
                 continue;
             }
-            $id = preg_replace('/^c_/i', '', $key);
+            $id = preg_replace('/\D/', '', $key);
             $config = ConfigxModel::findOrFail($id);
             if (Configx::config('check_permission', false) && !Admin::user()->can('confix.tab.' . $config->getPrefix())) {
                 continue;
@@ -411,9 +417,12 @@ class ConfigxController extends Controller
                 } else if ($etype == 'multiple_file') {
                     $field = new MultipleFile($key, [$label]);
                     $value = implode(',', $field->prepare($value));
-                } else if ($etype == 'checkbox_group' || $etype == 'tags') {
+                } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
                     $value = implode(',', (array)$value);
+                } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
+                    $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
                 }
+                \Log::info("$key => $value");
                 $textfield = new Text($key, [$label]);
                 $textfield->rules('required');
                 $fieldValidator = $textfield->getValidator([$key => $value]);
@@ -485,7 +494,6 @@ class ConfigxController extends Controller
                 $field->options($tabs)->setWidth(10, 2);
             }
         } else if ($val['id'] == 'name') {
-
             if ($config && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
                 $field = new Html('<label class="form-control">' . $editName . '</label>', [$label]);
             } else {
@@ -502,7 +510,7 @@ class ConfigxController extends Controller
                 //
                 , 'multiple_file', 'yes_or_no', 'rate', 'editor', 'tags', 'icon', 'color', 'number', 'table'
                 //
-                , 'textarea', 'radio_group', 'checkbox_group', 'select'
+                , 'textarea', 'radio_group', 'checkbox_group', 'listbox', 'select', 'multiple_select', 'map'
             ];
             if ($config && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
                 array_delete($elements, 'table');
@@ -613,8 +621,18 @@ class ConfigxController extends Controller
         } else if ($etype == 'checkbox_group') {
             $field = new Checkbox($rowname, [$label]);
             $field->options($cx_options[$val['name']]['options']);
+        } else if ($etype == 'listbox') {
+            $field = new Listbox($rowname, [$label]);
+            $field->options($cx_options[$val['name']]['options']);
         } else if ($etype == 'select') {
             $field = new Select($rowname, [$label]);
+            if (isset($cx_options[$val['name']]['options']['options_url'])) {
+                $field->options($cx_options[$val['name']]['options']['options_url']);
+            } else {
+                $field->options($cx_options[$val['name']]['options']);
+            }
+        } else if ($etype == 'multiple_select') {
+            $field = new MultipleSelect($rowname, [$label]);
             if (isset($cx_options[$val['name']]['options']['options_url'])) {
                 $field->options($cx_options[$val['name']]['options']['options_url']);
             } else {
@@ -626,6 +644,22 @@ class ConfigxController extends Controller
             $field = new Icon($rowname, [$label]);
         } else if ($etype == 'color') {
             $field = new Color($rowname, [$label]);
+            if (isset($cx_options[$val['name']]['options']['format'])) {
+                $field->options(['format' => $cx_options[$val['name']]['options']['format']]);
+            }
+        } else if ($etype == 'map') {
+            if (!isset(Form::$availableFields['map'])) {
+                $field = new Text($rowname, [$label]);
+            } else {
+                $latitude = $rowname . '_' . 'latitude';
+                $longitude = $rowname . '_' . 'longitude';
+                $field = new Form::$availableFields['map']($latitude, [$longitude, $label]);
+                $values = explode(',', $val['value']);
+                if (count($values) < 2) {
+                    $values = ['33.100745405144245', '107.05078326165676'];
+                }
+                $field->fill([$latitude => $values[0], $longitude => $values[1]]);
+            }
         } else if ($etype == 'table') {
             if (
                 $val['description'] && isset($cx_options[$val['name']]['options']['rows'])
@@ -663,7 +697,7 @@ class ConfigxController extends Controller
             $field = new Text($rowname, [$label]);
         }
         //
-        if ($etype == 'checkbox_group' || $etype == 'tags') {
+        if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
             $val['value'] = preg_replace('/,$/', '', $val['value']);
             $field->value(explode(',', $val['value']));
         } else if ($etype == 'multiple_image') {
@@ -672,18 +706,22 @@ class ConfigxController extends Controller
             if ($val['value'] && count($images)) {
                 $field->value($images);
             }
-        } else {
+        } else if (!($etype == 'map' && isset(Form::$availableFields['map']))) {
             $field->value($val['value']);
         }
         if (isset($cx_options[$val['name']]['options']) && !empty($cx_options[$val['name']]['help'])) {
             if ($etype == 'editor' && !isset(Form::$availableFields['editor'])) {
                 $field->help('<span class="label label-warning">The editor is unuseable!</span><br />' . $cx_options[$val['name']]['help']);
+            } else if ($etype == 'map' && !isset(Form::$availableFields['map'])) {
+                $field->help('<span class="label label-warning">The map is unuseable!</span><br />' . $cx_options[$val['name']]['help']);
             } else {
                 $field->help($cx_options[$val['name']]['help']);
             }
         } else {
             if ($etype == 'editor' && !isset(Form::$availableFields['editor'])) {
                 $field->help('<span class="label label-warning">The editor is unuseable!</span>');
+            } else if ($etype == 'map' && !isset(Form::$availableFields['editor'])) {
+                $field->help('<span class="label label-warning">The map is unuseable!</span>');
             }
         }
         return $field;

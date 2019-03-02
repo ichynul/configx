@@ -167,7 +167,10 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'tags' => '标签',
             'icon' => '图标',
             'color' => '颜色',
-            'table' =>'表格'
+            'table' =>'表格',
+            'listbox' => '左右多选框',
+            'multiple_select' => '下拉多选',
+            'map' => '地图'
         ],
         'base' => [
             'site_name' => '网站名称',
