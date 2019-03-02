@@ -25,10 +25,9 @@ use Illuminate\Routing\Controller;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Form\Field\Number;
 use Encore\Admin\Form\Field\Select;
-use function GuzzleHttp\json_encode;
+use Encore\Admin\Form\Field\Listbox;
 use Encore\Admin\Form\Field\Checkbox;
 use Encore\Admin\Form\Field\Datetime;
-use Encore\Admin\Form\Field\Map;
 use Encore\Admin\Form\Field\Textarea;
 use Encore\Admin\Widgets\Tab as Wtab;
 use Illuminate\Support\Facades\Session;
@@ -36,7 +35,6 @@ use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleImage;
 use Encore\Admin\Form\Field\MultipleSelect;
 use Illuminate\Support\Facades\Validator as ValidatorTool;
-use Encore\Admin\Form\Field\Listbox;
 
 class ConfigxController extends Controller
 {
