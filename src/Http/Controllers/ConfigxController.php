@@ -420,7 +420,6 @@ class ConfigxController extends Controller
                 } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
                     $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
                 }
-                \Log::info("$key => $value");
                 $textfield = new Text($key, [$label]);
                 $textfield->rules('required');
                 $fieldValidator = $textfield->getValidator([$key => $value]);
