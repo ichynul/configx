@@ -484,21 +484,21 @@ class ConfigxController extends Controller
         $rowname = 'values.c_' . $val['id'];
         if ($val['id'] == 'type') {
             if ($config) {
-                $field = new Html('<label class="form-control">' . trans('admin.configx.' . $editName) . '</label>', [$label]);
+                $field = new Text($rowname, [$label]);
+                $field->setWidth(10, 2);
+                $field->readOnly();
+                $field->value(trans('admin.configx.' . $editName));
             } else {
                 $field = new Radio($rowname, [$label]);
                 array_pop($tabs);
                 $field->options($tabs)->setWidth(10, 2);
             }
         } else if ($val['id'] == 'name') {
+            $field = new Text($rowname, [$label]);
+            $field->setWidth(10, 2);
             if ($config) {
-                $field = new Html('<label class="form-control">' . $editName . '</label>', [$label]);
-            } else {
-                $field = new Text($rowname, [$label]);
-                $field->setWidth(10, 2);
-                if ($config) {
-                    $field->value($editName);
-                }
+                $field->readOnly();
+                $field->value($editName);
             }
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
