@@ -717,7 +717,7 @@ class ConfigxController extends Controller
         } else {
             if ($etype == 'editor' && !isset(Form::$availableFields['editor'])) {
                 $field->help('<span class="label label-warning">The editor is unuseable!</span>');
-            } else if ($etype == 'map' && !isset(Form::$availableFields['editor'])) {
+            } else if ($etype == 'map' && !isset(Form::$availableFields['map'])) {
                 $field->help('<span class="label label-warning">The map is unuseable!</span>');
             }
         }
