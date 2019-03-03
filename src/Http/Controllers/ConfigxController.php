@@ -144,7 +144,6 @@ class ConfigxController extends Controller
     protected function buildTree($tree, $tableFields)
     {
         $treeHtml = '<div class="col-sm-3"><div class="row">';
-        $i = 1;
         foreach ($tree as $k => $v) {
             $treeHtml .= '<label class="control-label"><i class="fa fa-plus-square-o"></i>&nbsp;' . $k . '</label>';
             if (count($v)) {
@@ -174,7 +173,6 @@ class ConfigxController extends Controller
                 }
                 $treeHtml .= '</ol></div>';
             }
-            $i += 1;
         }
 
         $treeHtml .= '</div></div>';
