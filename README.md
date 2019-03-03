@@ -91,7 +91,7 @@ This wiil build a table like below :
 |     r_label3     |  base.some_key_3_1  |  base.some_key_3_2  |  base.some_key_3_3  |
 |-------------------------------------------------------------------------------------
         ↑
-    Ros labels
+    Row labels
 
 You can edit labels as you want.
 
