@@ -491,7 +491,7 @@ class ConfigxController extends Controller
                 $field->options($tabs)->setWidth(10, 2);
             }
         } else if ($val['id'] == 'name') {
-            if ($config && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
+            if ($config) {
                 $field = new Html('<label class="form-control">' . $editName . '</label>', [$label]);
             } else {
                 $field = new Text($rowname, [$label]);
