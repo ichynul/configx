@@ -134,7 +134,7 @@
                 var fieldKey = $key + '_' + i + '_' + j;
                 if (!buildGrid[fieldKey]) {
                     if (i == 0 && j == 0) {
-                        buildGrid[fieldKey] = 'r_label\\ c_label';
+                        buildGrid[fieldKey] = 'r_label\\c_label';
                     } else if (i == 0) {
                         buildGrid[fieldKey] = 'c_label' + j;
                     } else if (j == 0) {
