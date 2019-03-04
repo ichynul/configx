@@ -165,15 +165,15 @@ class ConfigxController extends Controller
                                     continue;
                                 }
                                 $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . trans('admin.configx.' . $k) . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
-                                . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
+                                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
                                     . '</li>';
                             }
                             $tfieldsHtml .= '</ul>';
                         }
                     }
                     $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . trans('admin.configx.' . $c['name']) . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
-                    . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
-                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
+                        . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
+                        . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
                         . $tfieldsHtml
                         . '</li>';
                 }
@@ -424,7 +424,7 @@ class ConfigxController extends Controller
                     $field = new MultipleFile($key, [$label]);
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
-                    $value = implode(',', (array) $value);
+                    $value = implode(',', (array)$value);
                 } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
                     $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
                 }
