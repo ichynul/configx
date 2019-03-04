@@ -266,6 +266,7 @@ class ConfigxController extends Controller
                 }
             }
             $table_field = isset($cx_options[$new_key]['table_field']);
+            $order = isset($cx_options[$new_key]['order']) ? 0 : $cx_options[$new_key]['order'];
             if (!empty($request->values['c_options'] && in_array(
                 $request->values['c_element'],
                 ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number', 'color', 'multiple_select', 'listbox']
@@ -330,6 +331,10 @@ class ConfigxController extends Controller
             }
             if ($table_field) {
                 $cx_options[$new_key]['table_field'] = 1;
+            }
+            if($order)
+            {
+                $cx_options[$new_key]['order'] = $order;
             }
             admin_toastr(trans('admin.save_succeeded'));
         } else {
