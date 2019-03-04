@@ -37,13 +37,13 @@
 
     function del(id) {
         swal({
-            title: "确认删除?",
+            title: "{{$deleteConfirm}}",
             type: "warning",
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
-            confirmButtonText: "确认",
+            confirmButtonText: "{{$confirm}}",
             showLoaderOnConfirm: true,
-            cancelButtonText: "取消",
+            cancelButtonText: "{{$cancel}}",
             preConfirm: function() {
                 return new Promise(function(resolve) {
                     $.ajax({
