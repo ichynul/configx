@@ -271,6 +271,14 @@ class ConfigxController extends Controller
                     $defaultVal = '-';
                 }
             }
+            if (!isset($cx_options[$new_key])) {
+                $cx_options[$new_key] = [
+                    'options' => [],
+                    'element' => '',
+                    'help' => '',
+                    'order' => 999,
+                ];
+            }
             $table_field = isset($cx_options[$new_key]['table_field']);
             $order = isset($cx_options[$new_key]['order']) ? 0 : $cx_options[$new_key]['order'];
             if (!empty($request->values['c_options'] && in_array(
