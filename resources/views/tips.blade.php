@@ -24,23 +24,23 @@
         <div class="row" id="table-div" style="margin-top:10px;">
 
         </div>
-        <code id="field-tip">&nbsp;</code>
+        <code style="visibility:hidden;" id="field-tip">&nbsp;</code>
     </div>
     <textarea class="hidden" id="saved-table">{{ json_encode($table) }}</textarea>
 </div>
 <script>
     var buildGrid = {};
-    $(function () {
-        $("body").on("ifChecked", "input:radio[name='values[c_element]']", function () {
+    $(function() {
+        $("body").on("ifChecked", "input:radio[name='values[c_element]']", function() {
             typeChange(this.value);
         });
 
-        $("body").on("keyup", "input.table-field", function () {
+        $("body").on("keyup", "input.table-field", function() {
             buildGrid[$(this).attr('data-key')] = $(this).val();
             getTdType($(this));
         });
 
-        $("body").on("focus", "input.table-field", function () {
+        $("body").on("focus", "input.table-field", function() {
             getTdType($(this));
         });
 
@@ -56,6 +56,7 @@
     function getTdType(el) {
         var key = el.attr('data-key');
         var val = el.val();
+        $('#field-tip').css('visibility', 'visible');
         if (key == val) {
             $('#field-tip').html(key + '&nbsp;:&nbsp;render as input element.');
             el.css('color', '#666');
@@ -159,5 +160,4 @@
         }
         $('#table-div').html(html);
     }
-
-</script>
+</script> 
