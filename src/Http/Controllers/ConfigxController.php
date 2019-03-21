@@ -87,6 +87,21 @@ class ConfigxController extends Controller
             }
             $formhtml = '';
             foreach ($subs as $val) {
+                if (preg_match('/\$admin\$/i', $val['name'])) {
+                    $old = $val['name'];
+                    $new = preg_replace('/\$admin\$/i', 'admin_' . Admin::user()->id, $old);
+                    $val = ConfigxModel::firstOrCreate(
+                        ['name' => $new],
+                        [
+                            'description' => trans('admin.configx.' . $val['name']) . ' for admin-' . Admin::user()->id,
+                            'value' => '1'
+                        ]
+                    );
+                    $val['name'] = $old;
+                }
+                if (preg_match('/admin_\d+?/i', $val['name'])) {
+                    continue;
+                }
                 if (isset($cx_options[$val['name']]) && isset($cx_options[$val['name']]['table_field'])) {
                     if ($cx_options && isset($cx_options[$val['name']])) {
                         $val['etype'] = $cx_options[$val['name']]['element'];
@@ -155,6 +170,17 @@ class ConfigxController extends Controller
             if (count($v)) {
                 $treeHtml .= '<div class="dd"><ol class="dd-list">';
                 foreach ($v as $c) {
+                    if (preg_match('/\$admin\$/i', $c['name'])) {
+                        $etype = $c['etype'];
+                        $c = ConfigxModel::firstOrCreate(
+                            ['name' => $c['name']],
+                            [
+                                'description' => trans('admin.configx.' . $c['name']),
+                                'value' => 'do not delete'
+                            ]
+                        );
+                        $c['etype'] = $etype;
+                    }
                     $tfieldsHtml = '';
                     if ($c['etype'] == 'table') {
                         $tableInfo = json_decode($c['description'], 1);
@@ -315,6 +341,9 @@ class ConfigxController extends Controller
                 return redirect()->back()->withInput();
             }
             if ($id == 0) {
+                if (preg_match('/\$admin\$/i', $new_key)) {
+                    $defaultVal = 'do not delete';
+                }
                 $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['c_help'] ?: trans('admin.configx.' . $new_key)];
                 if ($request->values['c_element'] == "table") {
                     $cx_options = $this->createTableConfigs($request->table, $cx_options);
@@ -393,6 +422,12 @@ class ConfigxController extends Controller
             if (Configx::config('check_permission', false) && !Admin::user()->can('confix.tab.' . $config->getPrefix())) {
                 continue;
             }
+            if (preg_match('/admin_\d+?/i', $config['name'])) {
+                $name = preg_replace('/admin_\d+?/i', '$admin$', $config['name']);
+                if (isset($cx_options[$name])) {
+                    $cx_options[$config['name']]['element'] = $cx_options[$name]['element'];
+                }
+            }
             if (isset($cx_options[$config['name']])) {
                 $etype = $cx_options[$config['name']]['element'];
                 $label = trans('admin.configx.' . $config['name']);
@@ -445,7 +480,7 @@ class ConfigxController extends Controller
                     $messages['values.c_' . $id . '.required'] = $msg;
                     $labels['values.c_' . $id] = $label;
                 }
-            } else {
+            } else if (!preg_match('/admin_\d+?/i', $config['name'])) {
                 $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'order' => 999];
             }
             if ($value == '' || $value == null) {

@@ -127,6 +127,10 @@ The keys will start with tab-keys in config :
 - base.site_tel
 - base.site_logo
 - base.site_open
+- (New feature support varable `$admin$` in key,see `ChagneLog.md`)
+- (新特性,支持在key中插入可变的$admin$,以便不同admin用户有不同设置，比如后台颜色主题、布局的定义,详细用例见`ChagneLog.md`)
+- base.layout_$admin$
+- base.skin_$admin$ 
 - ...
 - shop.shipping_compnay
 - shop.open_time
