@@ -9,15 +9,6 @@ Add 2 config keys :
 
 ```
 base.skin_$admin$
-    element type    : checkbox_group
-    options :
-    fixed
-    layout-boxed
-    layout-top-nav
-    sidebar-collapse
-    sidebar-mini
-
-base.layout_$admin$
     element type    : radiobox_group
     options :
         skin-blue
@@ -32,6 +23,15 @@ base.layout_$admin$
         skin-red-light
         skin-black
         skin-black-light
+
+base.layout_$admin$
+    element type    : checkbox_group
+    options :
+        fixed
+        layout-boxed
+        layout-top-nav
+        sidebar-collapse
+        sidebar-mini
 ```
 
 Then add some codes at `Admin/bootstrap.php` :
