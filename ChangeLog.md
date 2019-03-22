@@ -37,10 +37,13 @@ base.layout_$admin$
 Then add some codes at `Admin/bootstrap.php` :
 
 ```php
-config(
+if(Admin::user())
+{
+    config(
     [
         'admin.skin' => config('base.skin_admin_' . Admin::user()->id, 'skin-blue'),
         'admin.layout' => explode(',', config('base.layout_admin_' . Admin::user()->id, 'fixed')),
     ]
-);
+    );
+}
 ```
