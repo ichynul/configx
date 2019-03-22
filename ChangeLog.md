@@ -9,7 +9,7 @@ Add 2 config keys :
 
 ```
 base.skin_$admin$
-    element type    : radiobox_group
+    element type    : radio_group
     options :
         skin-blue
         skin-blue-light
