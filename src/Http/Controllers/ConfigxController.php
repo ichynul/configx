@@ -400,6 +400,9 @@ class ConfigxController extends Controller
             if (!$config) {
                 $forget[] = $k;
             }
+            if (preg_match('/admin_\d+?/i', $k)) {
+                $forget[] = $k;
+            }
         }
         if (count($forget)) {
             array_forget($cx_options, $forget);
