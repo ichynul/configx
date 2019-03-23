@@ -623,7 +623,7 @@ class ConfigxController extends Controller
 
     protected function getConfigField($cx_options, $val, $rowname, $label)
     {
-        $etype = $cx_options[$val['name']]['element'];
+        $etype = isset($cx_options[$val['name']]) ? array_get($cx_options[$val['name']], 'element')  : 'normal';
         if ($etype == 'image') {
             $field = new Image($rowname, [$label]);
         } else if ($etype == 'multiple_image') {
