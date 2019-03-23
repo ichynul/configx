@@ -114,9 +114,9 @@ So, you can chang a label <td> to input :
                                      it wiil just show label text 'hello world!' .
                                         (也可以把输入元素换成仅显示文字)
 
-note : if text = key ,render as input form element , otherwise just show the text you leave.
+note : if text = key or text = '' ,render as input form element , otherwise just show the text you leave.
 
-总结 : 如果输入的字符串与td默认key一样，这个位置将是一个可输入的表单元素，否则就显示原样你输入的字符串 .
+总结 : 如果输入的字符串与td默认key一样或输入的字符串为空，这个位置将是一个可输入的表单元素，否则就显示原样你输入的字符串 .
 
 */
 ```

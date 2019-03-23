@@ -57,7 +57,7 @@
         var key = el.attr('data-key');
         var val = el.val();
         $('#field-tip').css('visibility', 'visible');
-        if (key == val) {
+        if (key == val || val == '') {
             $('#field-tip').html(key + '&nbsp;:&nbsp;render as input element.');
             el.css('color', '#666');
         } else {
@@ -141,7 +141,7 @@
                     } else if (j == 0) {
                         buildGrid[fieldKey] = 'r_label' + i;
                     } else {
-                        buildGrid[fieldKey] = fieldKey;
+                        buildGrid[fieldKey] = '';
                     }
                 }
 

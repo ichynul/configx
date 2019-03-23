@@ -227,7 +227,7 @@ class ConfigxController extends Controller
             if (!isset($cx_options[$k])) {
                 $cx_options[$k] = ['element' => 'normal', 'options' => [], 'help' => '', 'order' => 999];
             }
-            if ($k == $v) {
+            if ($k == $v || '' == $v) {
                 $cx_options[$k]['table_field'] = 1;
             } else {
                 if (isset($cx_options[$k]['table_field'])) {
@@ -724,7 +724,7 @@ class ConfigxController extends Controller
                     $tableRow = new TableRow();
                     for ($j = 0; $j < $cx_options[$val['name']]['options']['cols']; $j += 1) {
                         $fieldKey = $val['name'] . '_' . $i . '_' . $j;
-                        if ($tableInfo[$fieldKey] == $fieldKey) {
+                        if ($tableInfo[$fieldKey] == $fieldKey || '' == $tableInfo[$fieldKey]) {
                             $label = trans($fieldKey);
                             $conf = ConfigxModel::where('name', $fieldKey)->first();
                             if ($conf) {
