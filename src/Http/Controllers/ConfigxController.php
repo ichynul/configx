@@ -218,7 +218,7 @@ class ConfigxController extends Controller
             return;
         }
         foreach ($tableInfo as $k => $v) {
-            if ($k == $v) {
+            if ($k == $v || '' == $v) {
                 $conf = ConfigxModel::where('name', $k)->first();
                 if (!$conf) {
                     ConfigxModel::create(['name' => $k, 'value' => '1', 'description' => 'Table field:' . $k]);
