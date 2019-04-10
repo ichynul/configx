@@ -77,9 +77,9 @@ If you selected form-element type is `table`, `rows / cols` is needed :
 
 `base.some_key`
 
-```js
-rows: 4;
-cols: 4;
+```
+rows: 4
+cols: 4
 ```
 
 This wiil build a table like below :
@@ -144,8 +144,8 @@ The keys will start with tab-keys in config :
 - base.site_open
 - (New feature support varable `$admin$` in key,see `ChagneLog.md`)
 - (新特性,支持在 key 中插入可变的$admin$,以便不同 admin 用户有不同设置，比如后台颜色主题、布局的定义,详细用例见`ChagneLog.md`)
-- base.layout\_$admin$
-- base.skin\_$admin$
+- base.layout_$admin$
+- base.skin_$admin$
 - ...
 - shop.shipping_compnay
 - shop.open_time
