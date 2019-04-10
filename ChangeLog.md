@@ -1,9 +1,39 @@
-## 2019 年 3 月 22 日 01 点 09 分
+## 2019 年 4 月 10 日
+
+#1.0.18
+
+- 1. If tab name is empty , get from trans : `trans("admin.configx.tabs.{$tabkey}")`;
+
+  tab 名称留空则从翻译中获取
+
+```php
+    'extensions' => [
+        'configx' => [
+            // *****
+            'tabs' => [
+                'base' => '基本设置',
+                'shop' => '店铺设置',
+                'uplaod' => '上传设置',
+                'image' => '' // if tab name is empty , get from trans : trans('admin.configx.tabs.image'); 留空则从翻译中获取名称
+            ],
+            // *****
+        ],
+    ],
+
+```
+
+- 2. When adding or editing a config , you can type in a `config_name` optionaly,
+
+     if `new_config_name` is empty, get from trans : `trans("admin.configx.{$tab}.{$config_key}")`;
+
+     添加或编辑配置信息时，可以输入配置名称，如若留空，则从翻译中获取
+
+## 2019 年 3 月 22 日
 
 New feature support varable key some\_$admin$\_str.
 新特性,支持在 key 中插入可变的$admin$
 
-# demo 
+# demo
 
 Add 2 config keys :
 

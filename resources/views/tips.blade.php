@@ -122,9 +122,9 @@
 
     function build(rows, cols) {
         var html = '<table class="table" style="border:1px solid #999;width:97%;margin:12px;">';
-        $key = $("input[name='values[c_name]']").val();
+        $key = $("input[name='values[c_key]']").val();
         if (!$key) {
-            $("input[name='values[c_name]']").focus();
+            $("input[name='values[c_key]']").focus();
             return;
         }
         var tdstyle =

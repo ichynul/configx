@@ -64,7 +64,10 @@ class ConfigxController extends Controller
             $cx_options = json_decode($configx_options['description'], 1);
         }
         $tableFields = [];
-        foreach ($tabs as $key => $value) {
+        foreach ($tabs as $key => &$value) {
+            if (empty($value)) {
+                $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
+            }
             if (Configx::config('check_permission', false) && !Admin::user()->can('confix.tab.' . $key)) {
                 continue;
             }
@@ -75,7 +78,8 @@ class ConfigxController extends Controller
             if ($key == 'new_config') {
                 $subs = array(
                     ['id' => 'type', 'name' => 'new_config_type', 'value' => ''],
-                    ['id' => 'name', 'name' => 'new_config_key', 'value' => ''],
+                    ['id' => 'key', 'name' => 'new_config_key', 'value' => ''],
+                    ['id' => 'name', 'name' => 'new_config_name', 'value' => ''],
                     ['id' => 'element', 'name' => 'new_config_element', 'value' => ''],
                     ['id' => 'help', 'name' => 'new_config_help', 'value' => ''],
                     ['id' => 'options', 'name' => 'new_config_options', 'value' => ''],
@@ -123,9 +127,9 @@ class ConfigxController extends Controller
             }
             if ($key == 'new_config') {
                 if ($id > 0) {
-                    $tab->add($value, '<a title="' . trans('admin.back') . '" href="' . admin_base_path('configx/edit') . '" style="color:#999;position:absolute;top:15px;right:25px;"><i class="fa fa-times"></i>' . '</a><div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields) . '</div>', false);
+                    $tab->add($value, '<a title="' . trans('admin.back') . '" href="' . admin_base_path('configx/edit') . '" style="color:#999;position:absolute;top:15px;right:25px;"><i class="fa fa-times"></i>' . '</a><div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields, $cx_options) . '</div>', false);
                 } else {
-                    $tab->add($value, '<div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields) . '</div>', false);
+                    $tab->add($value, '<div class="row"><div class="col-sm-9">' . $formhtml . '</div>' . $this->buildTree($tree, $tableFields, $cx_options) . '</div>', false);
                 }
             } else if ($id == 0) {
                 $tab->add($value, '<div class="row">' . $formhtml . '</div>', false);
@@ -162,7 +166,7 @@ class ConfigxController extends Controller
         }
     }
 
-    protected function buildTree($tree, $tableFields)
+    protected function buildTree($tree, $tableFields, $cx_options)
     {
         $treeHtml = '<div class="col-sm-3"><div class="row">';
         foreach ($tree as $k => $v) {
@@ -190,14 +194,23 @@ class ConfigxController extends Controller
                                 if (!isset($tableFields[$k])) {
                                     continue;
                                 }
-                                $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . trans('admin.configx.' . $k) . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
+                                $label = $cx_options && isset($cx_options[$k]) ? array_get($cx_options[$k], 'name') : '';
+                                if (!$label) {
+                                    $label =  trans('admin.configx.' . $k);
+                                }
+
+                                $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . $label . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
                                     . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
                                     . '</li>';
                             }
                             $tfieldsHtml .= '</ul>';
                         }
                     }
-                    $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . trans('admin.configx.' . $c['name']) . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
+                    $label = $cx_options && isset($cx_options[$c['name']]) ? array_get($cx_options[$c['name']], 'name') : '';
+                    if (!$label) {
+                        $label =  trans('admin.configx.' . $c['name']);
+                    }
+                    $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . $label . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
                         . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
                         . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
                         . $tfieldsHtml
@@ -225,7 +238,7 @@ class ConfigxController extends Controller
                 }
             }
             if (!isset($cx_options[$k])) {
-                $cx_options[$k] = ['element' => 'normal', 'options' => [], 'help' => '', 'order' => 999];
+                $cx_options[$k] = ['element' => 'normal', 'options' => [], 'help' => '', 'name' => '', 'order' => 999];
             }
             if ($k == $v || '' == $v) {
                 $cx_options[$k]['table_field'] = 1;
@@ -266,14 +279,14 @@ class ConfigxController extends Controller
         }
         $cx_options = $this->saveValues($request, $cx_options);
 
-        if ((!empty($request->values['c_type']) && !empty($request->values['c_name'])) || $id > 0) {
+        if ((!empty($request->values['c_type']) && !empty($request->values['c_key'])) || $id > 0) {
             $config = [];
             $defaultVal = "1";
             if ($id > 0) {
                 $config = ConfigxModel::findOrFail($id);
                 $new_key = $config['name'];
             } else {
-                $new_key = $request->values['c_name'];
+                $new_key = $request->values['c_key'];
                 if ($request->values['c_type'] == 'configx_demo') {
                     admin_error('Error', "You need to add configs in [/config/admin.php] first!.");
                     return redirect()->back()->withInput();
@@ -302,6 +315,7 @@ class ConfigxController extends Controller
                     'options' => [],
                     'element' => '',
                     'help' => '',
+                    'name' => '',
                     'order' => 999,
                 ];
             }
@@ -321,7 +335,7 @@ class ConfigxController extends Controller
                         $arr[trim($kv[0])] = trim($kv[0]);
                     }
                 }
-                $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element'], 'help' => $request->values['c_help'], 'order' => 999];
+                $cx_options[$new_key] = ['options' => $arr, 'element' => $request->values['c_element'], 'help' => $request->values['c_help'], 'name' => $request->values['c_name'], 'order' => 999];
                 $keys = array_keys($arr);
                 if ($request->values['c_element'] == "table") {
                     $defaultVal = 'do not delete';
@@ -333,7 +347,7 @@ class ConfigxController extends Controller
                     admin_error('Error', "The options is empty!");
                     return redirect()->back()->withInput();
                 } else {
-                    $cx_options[$new_key] = ['options' => [], 'element' => $request->values['c_element'], 'help' => $request->values['c_help'], 'order' => 999];
+                    $cx_options[$new_key] = ['options' => [], 'element' => $request->values['c_element'], 'help' => $request->values['c_help'], 'name' => $request->values['c_name'], 'order' => 999];
                 }
             }
             if ($request->values['c_element'] == 'table' && empty($request->table)) {
@@ -344,7 +358,7 @@ class ConfigxController extends Controller
                 if (preg_match('/\$admin\$/i', $new_key)) {
                     $defaultVal = 'do not delete';
                 }
-                $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['c_help'] ?: trans('admin.configx.' . $new_key)];
+                $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['name'] ?: trans('admin.configx.' . $new_key)];
                 if ($request->values['c_element'] == "table") {
                     $cx_options = $this->createTableConfigs($request->table, $cx_options);
                     $data['description'] = json_encode($request->table);
@@ -417,7 +431,7 @@ class ConfigxController extends Controller
         $labels = [];
         \DB::beginTransaction();
         foreach ($request->values as $key => $value) {
-            if (in_array($key, ['c_type', 'c_element', 'c_help', 'c_name', 'c_options'])) {
+            if (in_array($key, ['c_type', 'c_element', 'c_help', 'c_key', 'c_name', 'c_options'])) {
                 continue;
             }
             $id = preg_replace('/\D/', '', $key);
@@ -484,7 +498,7 @@ class ConfigxController extends Controller
                     $labels['values.c_' . $id] = $label;
                 }
             } else if (!preg_match('/admin_\d+?/i', $config['name'])) {
-                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'order' => 999];
+                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'name' => '', 'order' => 999];
             }
             if ($value == '' || $value == null) {
                 admin_warning('Error', trans('admin.configx.' . $config['name']) . ' is empty!');
@@ -515,7 +529,7 @@ class ConfigxController extends Controller
             if (isset($cx_options[$config['name']])) {
                 $cx_options[$config['name']]['order'] = $i;
             } else {
-                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'order' => $i];
+                $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'name' => '', 'order' => $i];
             }
             $i += 5;
         }
@@ -531,7 +545,10 @@ class ConfigxController extends Controller
 
     protected function createField($val, $tabs, $cx_options, $config)
     {
-        $label = trans('admin.configx.' . $val['name']);
+        $label = $cx_options && isset($cx_options[$val['name']]) ? array_get($cx_options[$val['name']], 'name') : '';
+        if (!$label) {
+            $label =  trans('admin.configx.' . $val['name']);
+        }
         if ($config) {
             $editName = $config['name'];
         }
@@ -547,12 +564,20 @@ class ConfigxController extends Controller
                 array_pop($tabs);
                 $field->options($tabs)->setWidth(10, 2);
             }
-        } else if ($val['id'] == 'name') {
+        } else if ($val['id'] == 'key') {
             $field = new Text($rowname, [$label]);
             $field->setWidth(10, 2);
             if ($config) {
                 $field->readOnly();
                 $field->value($editName);
+            }
+        } else if ($val['id'] == 'name') {
+            $field = new Text($rowname, [$label]);
+            $field->setWidth(10, 2);
+            if ($config) {
+                if ($config && $cx_options && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['name'])) {
+                    $field->value($cx_options[$config['name']]['name']);
+                }
             }
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
@@ -617,6 +642,9 @@ class ConfigxController extends Controller
                 $field = new Text($rowname, [$label]);
                 $field->value($val['value']);
             }
+        }
+        if (in_array($val['id'], ['type', 'key', 'element'])) {
+            $field->setLabelClass(['asterisk']);
         }
         return $val['id'] == 'options' ? '<div class="option-list hidden">' . $field->render() . '</div>' : $field->render();
     }
@@ -733,7 +761,11 @@ class ConfigxController extends Controller
                                 $tableRow->pushField($tableField, 1);
                             }
                         } else {
-                            $tableRow->show($tableInfo[$fieldKey])->Textalign('center');
+                            $text = $tableInfo[$fieldKey];
+                            if (preg_match('/^trans\.(\w+)/i', $text, $mchs)) { //if text is trans.sometext , get from trans : trans("admin.configx.{$tab}.{$tablekey}.{$sometext}")
+                                $text = trans("admin.configx.{$val['name']}.{$mchs[1]}");
+                            }
+                            $tableRow->show($text)->Textalign('center');
                         }
                     }
                     $rows[] = $tableRow;

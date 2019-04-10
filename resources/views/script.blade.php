@@ -1,7 +1,7 @@
 <script>
     $(function() {
         $("body").on("ifChecked", "input:radio[name='values[c_type]']", function() {
-            $('input[name="values[c_name]"]').val(this.value ? this.value + '.new_key_here' : '');
+            $('input[name="values[c_key]"]').val(this.value ? this.value + '.new_key_here' : '');
         });
         $("body").on("click", ".nav.nav-tabs li", function() {
             var index = $(".nav.nav-tabs li").index(this);

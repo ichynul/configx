@@ -27,7 +27,8 @@ Add a tabs config in `config/admin.php`:
             'tabs' => [
                 'base' => '基本设置',
                 'shop' => '店铺设置',
-                'uplaod' => '上传设置'
+                'uplaod' => '上传设置',
+                'image' => '' // if tab name is empty , get from trans : trans('admin.configx.tabs.image'); tab名称留空则从翻译中获取
             ],
             // Whether check group permissions. if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
             'check_permission' => false
@@ -51,6 +52,7 @@ step 2 Select form-element type from `['normal', 'date', 'time', 'datetime', 'im
 step 3 If you selected form-element type is `['radio_group' ,'checkbox_group', 'select']` ,you need inupt `[options]` :
 
 just text:
+
 ```js
 text1
 text2
@@ -58,11 +60,13 @@ text2
 ```
 
 and key-text:
+
 ```js
 key1 : text1
 key2 : text2
 ...
 ```
+
 or load from ulr:
 
 `options_url:/api/mydata`
@@ -72,9 +76,10 @@ If you selected form-element type is `textarea` , you can config it `rows:3` , d
 If you selected form-element type is `table`, `rows / cols` is needed :
 
 `base.some_key`
+
 ```js
-rows : 4
-cols : 4
+rows: 4;
+cols: 4;
 ```
 
 This wiil build a table like below :
@@ -100,23 +105,33 @@ Each <td> has a key , base.some_key_[0]_[0] to base.some_key_[rows-1]_[cols-1] .
 So, you can chang a label <td> to input :
 
 |-------------------------------------------------------------------------------------
-|  r_label\ c_labe |       c_label1      |        c_label2     |  base.some_key_0_3  |  ⬅ [c_label3 change] to [base.some_key_0_3]
+|  r_label\ c_labe |       c_label1      |        c_label2     |  base.some_key_0_3  |  ⬅ [c_label3] change to [base.some_key_0_3]
 |-------------------------------------------------------------------------------------     , we can input here .
 |     r_label1     |  base.some_key_1_1  |  base.some_key_1_2  |  base.some_key_1_3  |      (可以把label 换成输入元素)
 |-------------------------------------------------------------------------------------
 |     r_label2     |  base.some_key_2_1  |  base.some_key_2_2  |  base.some_key_2_3  |
 |-------------------------------------------------------------------------------------
-|     r_label3     |  base.some_key_3_1  |     hello world!    |  base.some_key_3_3  |
+| trans.sometext   |  base.some_key_3_1  |     hello world!    |  base.some_key_3_3  |
 |-------------------------------------------------------------------------------------
-                                                    ↑
-                                    [base.some_key_3_2] change to [hello world!]
-                                        , we can not input here any more ,
-                                     it wiil just show label text 'hello world!' .
-                                        (也可以把输入元素换成仅显示文字)
+          ↑                                           ↑
+          ↑                           [base.some_key_3_2] change to [hello world!]
+          ↑                              , we can not input here any more ,
+          ↑                           it wiil just show label text 'hello world!' .
+          ↑                              (也可以把输入元素换成仅显示文字)
+          ↑
+  get text from trans
+trans("admin.configx.base.some_key.sometext")
+显示文字时可以从翻译获取文字,样式 `trans.sometext` 
+其中 sometext 为翻译的key
+
+
 
 note : if text = key or text = '' ,render as input form element , otherwise just show the text you leave.
 
+//if text is trans.sometext , get from trans : trans("admin.configx.{$tab}.{$tablekey}.{$sometext}")
+
 总结 : 如果输入的字符串与td默认key一样或输入的字符串为空，这个位置将是一个可输入的表单元素，否则就显示原样你输入的字符串 .
+
 
 */
 ```
@@ -128,9 +143,9 @@ The keys will start with tab-keys in config :
 - base.site_logo
 - base.site_open
 - (New feature support varable `$admin$` in key,see `ChagneLog.md`)
-- (新特性,支持在key中插入可变的$admin$,以便不同admin用户有不同设置，比如后台颜色主题、布局的定义,详细用例见`ChagneLog.md`)
-- base.layout_$admin$
-- base.skin_$admin$ 
+- (新特性,支持在 key 中插入可变的$admin$,以便不同 admin 用户有不同设置，比如后台颜色主题、布局的定义,详细用例见`ChagneLog.md`)
+- base.layout\_$admin$
+- base.skin\_$admin$
 - ...
 - shop.shipping_compnay
 - shop.open_time
@@ -146,6 +161,7 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
 'configx' => [
         'new_config_type' => '新配置类型',
         'new_config_key' => '新配置key',
+        'new_config_name' => '新配置名称',
         'new_config_element' => '新配置表单元素',
         'new_config_help' => '新配置help',
         'new_config_options' => '新配置扩展项',
@@ -176,6 +192,14 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'multiple_select' => '下拉多选',
             'map' => '地图'
         ],
+        //since 1.0.18
+
+        // When adding or editing a config , you can type in a `config_name` optionaly,
+
+        //if `new_config_name` is empty, get from trans : `trans("admin.configx.{$tab}.{$config_key}")`;
+
+        //1.0.18版本起，添加或编辑配置信息时，可以输入配置名称，如若留空，则从翻译中获取
+
         'base' => [
             'site_name' => '网站名称',
             'site_tel' =>　'电话',
