@@ -358,7 +358,7 @@ class ConfigxController extends Controller
                 if (preg_match('/\$admin\$/i', $new_key)) {
                     $defaultVal = 'do not delete';
                 }
-                $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['name'] ?: trans('admin.configx.' . $new_key)];
+                $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['c_name'] ?: trans('admin.configx.' . $new_key)];
                 if ($request->values['c_element'] == "table") {
                     $cx_options = $this->createTableConfigs($request->table, $cx_options);
                     $data['description'] = json_encode($request->table);
@@ -558,7 +558,21 @@ class ConfigxController extends Controller
                 $field = new Text($rowname, [$label]);
                 $field->setWidth(10, 2);
                 $field->readOnly();
-                $field->value(trans('admin.configx.' . $editName));
+                $typekey = explode('.', $editName)[0];
+                $typename = array_get($tabs, $typekey);
+                if (empty($typename)) {
+                    $typename = trans('admin.configx.tabs.' . $typekey); // if tab name is empty , get from trans
+                }
+                if ($cx_options && isset($cx_options[$config['name']]) && isset($cx_options[$config['name']]['table_field'])) {
+                    $tableKey = preg_replace('/^(\w+?\.\w+?)_\d+_\d+$/i', '$1', $editName);
+                    if ($cx_options && isset($cx_options[$tableKey]) && isset($cx_options[$tableKey]['name'])) {
+                        $typename .= '-' . $cx_options[$tableKey]['name'];
+                    } else {
+                        $typename .= '-' . trans('admin.configx.' . $tableKey);
+                    }
+                }
+                $field->value($typename);
+                //
             } else {
                 $field = new Radio($rowname, [$label]);
                 array_pop($tabs);
