@@ -770,7 +770,10 @@ class ConfigxController extends Controller
                     for ($j = 0; $j < $cx_options[$val['name']]['options']['cols']; $j += 1) {
                         $fieldKey = $val['name'] . '_' . $i . '_' . $j;
                         if ($tableInfo[$fieldKey] == $fieldKey || '' == $tableInfo[$fieldKey]) {
-                            $label = trans($fieldKey);
+                            $label = $cx_options && isset($cx_options[$fieldKey]) ? array_get($cx_options[$fieldKey], 'name') : '';
+                            if (!$label) {
+                                $label = trans($fieldKey);
+                            }
                             $conf = ConfigxModel::where('name', $fieldKey)->first();
                             if ($conf) {
                                 $rowname = 'values.c_' . $conf['id'];
