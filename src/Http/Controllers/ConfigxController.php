@@ -447,7 +447,10 @@ class ConfigxController extends Controller
             }
             if (isset($cx_options[$config['name']])) {
                 $etype = $cx_options[$config['name']]['element'];
-                $label = trans('admin.configx.' . $config['name']);
+                $label = $cx_options && isset($cx_options[$config['name']]) ? array_get($cx_options[$config['name']], 'name') : '';
+                if (!$label) {
+                    $label =  trans('admin.configx.' . $config['name']);
+                }
                 if ($etype == 'image') {
                     $field = new Image($key, [$label]);
                     $validator = $field->getValidator([$key => $value]);
@@ -501,7 +504,7 @@ class ConfigxController extends Controller
                 $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'name' => '', 'order' => 999];
             }
             if ($value == '' || $value == null) {
-                admin_warning('Error', trans('admin.configx.' . $config['name']) . ' is empty!');
+                admin_warning('Error', trans('validation.required', ['attribute' => $label]));
                 continue;
             }
             $config->value = $value;
