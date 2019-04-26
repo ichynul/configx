@@ -2,39 +2,39 @@
 
 namespace Ichynul\Configx\Http\Controllers;
 
-use Encore\Admin\Form;
-use Ichynul\RowTable\Table;
-use Ichynul\Configx\Configx;
-use Illuminate\Http\Request;
-use Ichynul\RowTable\TableRow;
 use Encore\Admin\Facades\Admin;
-use Encore\Admin\Layout\Content;
+use Encore\Admin\Form;
+use Encore\Admin\Form\Field\Checkbox;
+use Encore\Admin\Form\Field\Color;
 use Encore\Admin\Form\Field\Date;
+use Encore\Admin\Form\Field\Datetime;
 use Encore\Admin\Form\Field\File;
+use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Form\Field\Html;
 use Encore\Admin\Form\Field\Icon;
-use Encore\Admin\Form\Field\Rate;
-use Encore\Admin\Form\Field\Tags;
-use Encore\Admin\Form\Field\Text;
-use Encore\Admin\Form\Field\Password;
-use Encore\Admin\Form\Field\Time;
-use Ichynul\Configx\ConfigxModel;
-use Encore\Admin\Form\Field\Color;
 use Encore\Admin\Form\Field\Image;
-use Encore\Admin\Form\Field\Radio;
-use Illuminate\Routing\Controller;
-use Encore\Admin\Form\Field\Hidden;
-use Encore\Admin\Form\Field\Number;
-use Encore\Admin\Form\Field\Select;
 use Encore\Admin\Form\Field\Listbox;
-use Encore\Admin\Form\Field\Checkbox;
-use Encore\Admin\Form\Field\Datetime;
-use Encore\Admin\Form\Field\Textarea;
-use Encore\Admin\Widgets\Tab as Wtab;
-use Illuminate\Support\Facades\Session;
 use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleImage;
 use Encore\Admin\Form\Field\MultipleSelect;
+use Encore\Admin\Form\Field\Number;
+use Encore\Admin\Form\Field\Password;
+use Encore\Admin\Form\Field\Radio;
+use Encore\Admin\Form\Field\Rate;
+use Encore\Admin\Form\Field\Select;
+use Encore\Admin\Form\Field\Tags;
+use Encore\Admin\Form\Field\Text;
+use Encore\Admin\Form\Field\Textarea;
+use Encore\Admin\Form\Field\Time;
+use Encore\Admin\Layout\Content;
+use Encore\Admin\Widgets\Tab as Wtab;
+use Ichynul\Configx\Configx;
+use Ichynul\Configx\ConfigxModel;
+use Ichynul\RowTable\Table;
+use Ichynul\RowTable\TableRow;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator as ValidatorTool;
 
 class ConfigxController extends Controller
@@ -48,10 +48,18 @@ class ConfigxController extends Controller
         if (empty($tabs)) {
             $tabs = ['configx_demo' => 'config tabs in /config/admin.php'];
         }
+        $cx_options = [];
+        if ($configx_options && $configx_options['description']) {
+            $cx_options = json_decode($configx_options['description'], 1);
+        }
         $config = [];
         if ($id > 0) {
             $config = ConfigxModel::findOrFail($id);
-            $tabs['new_config'] = trans('admin.edit') . '-' . trans('admin.configx.' . $config['name']);
+            $label = $cx_options && isset($cx_options[$config['name']]) ? array_get($cx_options[$config['name']], 'name') : '';
+            if (!$label) {
+                $label = trans('admin.configx.' . $config['name']);
+            }
+            $tabs['new_config'] = trans('admin.edit') . '-' . $label;
         } else {
             $tabs['new_config'] = "+";
         }
@@ -60,10 +68,6 @@ class ConfigxController extends Controller
         }
         $tab = new Wtab();
         $tree = [];
-        $cx_options = [];
-        if ($configx_options && $configx_options['description']) {
-            $cx_options = json_decode($configx_options['description'], 1);
-        }
         $tableFields = [];
         foreach ($tabs as $key => &$value) {
             if (empty($value)) {
@@ -99,7 +103,7 @@ class ConfigxController extends Controller
                         ['name' => $new],
                         [
                             'description' => trans('admin.configx.' . $val['name']) . ' for admin-' . Admin::user()->id,
-                            'value' => '1'
+                            'value' => '1',
                         ]
                     );
                     $val['name'] = $old;
@@ -181,7 +185,7 @@ class ConfigxController extends Controller
                             ['name' => $c['name']],
                             [
                                 'description' => trans('admin.configx.' . $c['name']),
-                                'value' => 'do not delete'
+                                'value' => 'do not delete',
                             ]
                         );
                         $c['etype'] = $etype;
@@ -197,11 +201,11 @@ class ConfigxController extends Controller
                                 }
                                 $label = $cx_options && isset($cx_options[$k]) ? array_get($cx_options[$k], 'name') : '';
                                 if (!$label) {
-                                    $label =  trans('admin.configx.' . $k);
+                                    $label = trans('admin.configx.' . $k);
                                 }
 
                                 $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . $label . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
-                                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
+                                . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
                                     . '</li>';
                             }
                             $tfieldsHtml .= '</ul>';
@@ -209,11 +213,11 @@ class ConfigxController extends Controller
                     }
                     $label = $cx_options && isset($cx_options[$c['name']]) ? array_get($cx_options[$c['name']], 'name') : '';
                     if (!$label) {
-                        $label =  trans('admin.configx.' . $c['name']);
+                        $label = trans('admin.configx.' . $c['name']);
                     }
                     $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . $label . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
-                        . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
-                        . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
+                    . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
+                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
                         . $tfieldsHtml
                         . '</li>';
                 }
@@ -450,7 +454,7 @@ class ConfigxController extends Controller
                 $etype = $cx_options[$config['name']]['element'];
                 $label = $cx_options && isset($cx_options[$config['name']]) ? array_get($cx_options[$config['name']], 'name') : '';
                 if (!$label) {
-                    $label =  trans('admin.configx.' . $config['name']);
+                    $label = trans('admin.configx.' . $config['name']);
                 }
                 if ($etype == 'image') {
                     $field = new Image($key, [$label]);
@@ -488,7 +492,7 @@ class ConfigxController extends Controller
                     $field = new MultipleFile($key, [$label]);
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
-                    $value = implode(',', (array)$value);
+                    $value = implode(',', (array) $value);
                 } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
                     $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
                 }
@@ -551,7 +555,7 @@ class ConfigxController extends Controller
     {
         $label = $cx_options && isset($cx_options[$val['name']]) ? array_get($cx_options[$val['name']], 'name') : '';
         if (!$label) {
-            $label =  trans('admin.configx.' . $val['name']);
+            $label = trans('admin.configx.' . $val['name']);
         }
         if ($config) {
             $editName = $config['name'];
@@ -669,7 +673,7 @@ class ConfigxController extends Controller
 
     protected function getConfigField($cx_options, $val, $rowname, $label)
     {
-        $etype = isset($cx_options[$val['name']]) ? array_get($cx_options[$val['name']], 'element')  : 'normal';
+        $etype = isset($cx_options[$val['name']]) ? array_get($cx_options[$val['name']], 'element') : 'normal';
         if ($etype == 'image') {
             $field = new Image($rowname, [$label]);
         } else if ($etype == 'multiple_image') {
