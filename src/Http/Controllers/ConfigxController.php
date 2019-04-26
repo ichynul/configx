@@ -16,6 +16,7 @@ use Encore\Admin\Form\Field\Icon;
 use Encore\Admin\Form\Field\Rate;
 use Encore\Admin\Form\Field\Tags;
 use Encore\Admin\Form\Field\Text;
+use Encore\Admin\Form\Field\Password;
 use Encore\Admin\Form\Field\Time;
 use Ichynul\Configx\ConfigxModel;
 use Encore\Admin\Form\Field\Color;
@@ -599,7 +600,7 @@ class ConfigxController extends Controller
         } else if ($val['id'] == 'element') {
             $field = new Radio($rowname, [$label]);
             $elements = [
-                'normal', 'date', 'time', 'datetime', 'image', 'multiple_image', 'file', 'multiple_file',
+                'normal', 'date', 'time', 'datetime', 'image', 'multiple_image', 'password', 'file', 'multiple_file',
                 'yes_or_no', 'rate', 'editor', 'tags', 'icon', 'color', 'number', 'table', 'textarea',
                 'radio_group', 'checkbox_group', 'listbox', 'select', 'multiple_select', 'map',
             ];
@@ -690,6 +691,8 @@ class ConfigxController extends Controller
             $field = new Time($rowname, [$label]);
         } else if ($etype == 'datetime') {
             $field = new Datetime($rowname, [$label]);
+        } else if ($etype == 'password') {
+            $field = new Password($rowname, [$label]);
         } else if ($etype == 'yes_or_no') {
             $field = new Radio($rowname, [$label]);
             $field->options(['1' => trans('admin.yes'), '0' => trans('admin.no')]);
