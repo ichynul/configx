@@ -13,7 +13,16 @@
         <pre>max : 100<br/>min : 1</pre>
     </div>
     <div class="elem color_elem col-sm-12">
-        <pre>format : rgba<br/><br/>[hex,rgb,rgba]</pre>
+        <pre>format : rgba<br/><br/>format can be : [hex,rgb,rgba]</pre>
+    </div>
+    <div class="elem image_elem col-sm-12">
+        <pre>@resize : 320, 240<br/>@insert : public/watermark.png ,center<br/>@crop : 320, 240, 0 , 0<br /></pre>
+        <code>
+            @methodname : arg1,arg2 ...
+        </code><br /><br />
+        Require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
+        <br />
+        Usage : <a href="http://image.intervention.io/getting_started/introduction" target="_blank">[Intervention]</a>
     </div>
     <div class="elem map_elem col-sm-12">
         <pre>To use map ,you need to edit configs first.<br/><br/>map_provider in /config/admin.php<br/><br/>TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env</pre>
@@ -70,7 +79,7 @@
         $('div.elem').addClass('hidden');
         if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' ||
             value == 'textarea' || value == 'table' ||
-            value == 'number' || value == 'color' || value == 'multiple_select' || value == 'listbox' || value == 'map'
+            value == 'number' || value == 'color' || value == 'multiple_select' || value == 'listbox' || value == 'map' || value == 'image'
         ) {
             $(".option-list").removeClass('hidden');
         } else {
@@ -97,6 +106,8 @@
             $('.color_elem').removeClass('hidden');
         } else if (value == 'table') {
             $('.table_elem').removeClass('hidden');
+        } else if (value == 'image') {
+            $('.image_elem').removeClass('hidden');
         } else if (value == 'map') {
             $('.map_elem').removeClass('hidden');
         }
@@ -160,4 +171,4 @@
         }
         $('#table-div').html(html);
     }
-</script> 
+</script>

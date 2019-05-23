@@ -328,7 +328,7 @@ class ConfigxController extends Controller
             $order = isset($cx_options[$new_key]['order']) ? 0 : $cx_options[$new_key]['order'];
             if (!empty($request->values['c_options'] && in_array(
                 $request->values['c_element'],
-                ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number', 'color', 'multiple_select', 'listbox']
+                ['radio_group', 'checkbox_group', 'select', 'table', 'textarea', 'number', 'color', 'multiple_select', 'listbox', 'image']
             ))) {
                 $c_options = explode(PHP_EOL, $request->values['c_options']);
                 $arr = [];
@@ -458,6 +458,32 @@ class ConfigxController extends Controller
                 }
                 if ($etype == 'image') {
                     $field = new Image($key, [$label]);
+                    $options = array_get($cx_options[$config['name']], 'options');
+                    if ($options) {
+                        foreach ($options as $k => $v) {
+                            if (preg_match('/@\w+/', $k)) {
+                                $args = array_filter(explode(',', $v));
+                                $args = collect($args)->map(function ($s) {
+                                    $s = trim($s);
+                                    if (preg_match('/^\d+$/', $s)) {
+                                        return intval($s);
+                                    }
+                                    if (preg_match('/^\d+\.\d+$/', $s)) {
+                                        return doubleval($s);
+                                    }
+                                    if (preg_match('/^(false|true)$/i', $s)) {
+                                        return strtolower($s) == 'true';
+                                    }
+                                    return preg_replace("/^\s*['\"]|['\"]\s*$/", '', $s);
+                                })->all();
+
+                                call_user_func_array(
+                                    [$field, str_replace_first('@', '', $k)],
+                                    $args
+                                );
+                            }
+                        }
+                    }
                     $field->uniqueName();
                     $validator = $field->getValidator([$key => $value]);
                     if ($validator->fails()) {
@@ -470,7 +496,6 @@ class ConfigxController extends Controller
                         admin_warning('Error', $msg, 'error');
                         continue;
                     }
-                   
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_image') {
                     $field = new MultipleImage($key, [$label]);
@@ -811,11 +836,9 @@ class ConfigxController extends Controller
         }
         //
         if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
-            $val['value'] = preg_replace('/,$/', '', $val['value']);
-            $field->value(explode(',', $val['value']));
+            $field->value(array_filter(explode(',', $val['value'])));
         } else if ($etype == 'multiple_image') {
-            $val['value'] = preg_replace('/,$/', '', $val['value']);
-            $images = explode(',', $val['value']);
+            $images = array_filter(explode(',', $val['value']));
             if ($val['value'] && count($images)) {
                 $field->value($images);
             }
