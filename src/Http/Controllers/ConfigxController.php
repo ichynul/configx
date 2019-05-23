@@ -205,7 +205,7 @@ class ConfigxController extends Controller
                                 }
 
                                 $tfieldsHtml .= '<li title="' . $k . '" style="border-bottom:1px dashed #e1e1e1;">' . $label . '-<b>[' . trans('admin.configx.element.' . $tableFields[$k]['etype']) . ']</b>'
-                                . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
+                                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $tableFields[$k]['id']) . '"><i class="fa fa-edit"></i></a>'
                                     . '</li>';
                             }
                             $tfieldsHtml .= '</ul>';
@@ -216,8 +216,8 @@ class ConfigxController extends Controller
                         $label = trans('admin.configx.' . $c['name']);
                     }
                     $treeHtml .= '<li title="' . $c['name'] . '" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;" class="dd-item" data-id="' . $c['id'] . '"><span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;' . $label . '</span>' . '-<b>[' . trans('admin.configx.element.' . $c['etype']) . ']</b>'
-                    . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
-                    . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
+                        . '<a style="margin-left:5px;" class="pull-right dd-nodrag" title="lelete" onclick="del(\'' . $c['id'] . '\');" href="javascript:;"><i class="fa fa-trash-o"></i></a>'
+                        . '<a class="pull-right dd-nodrag" title="click to change" href="' . admin_base_path('configx/edit/' . $c['id']) . '"><i class="fa fa-edit"></i></a>'
                         . $tfieldsHtml
                         . '</li>';
                 }
@@ -458,6 +458,7 @@ class ConfigxController extends Controller
                 }
                 if ($etype == 'image') {
                     $field = new Image($key, [$label]);
+                    $field->uniqueName();
                     $validator = $field->getValidator([$key => $value]);
                     if ($validator->fails()) {
                         $msg = $validator->errors()->first() ?: 'Image error-' . $label;
@@ -469,9 +470,11 @@ class ConfigxController extends Controller
                         admin_warning('Error', $msg, 'error');
                         continue;
                     }
+                   
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_image') {
                     $field = new MultipleImage($key, [$label]);
+                    $field->uniqueName()->removable();
                     $validator = $field->getValidator([$key => $value]);
                     if ($validator->fails()) {
                         $msg = $validator->errors()->first();
@@ -487,12 +490,14 @@ class ConfigxController extends Controller
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'file') {
                     $field = new File($key, [$label]);
+                    $field->uniqueName();
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_file') {
                     $field = new MultipleFile($key, [$label]);
+                    $field->uniqueName()->removable();;
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
-                    $value = implode(',', (array) $value);
+                    $value = implode(',', (array)$value);
                 } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
                     $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
                 }
