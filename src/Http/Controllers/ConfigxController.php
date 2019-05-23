@@ -474,7 +474,7 @@ class ConfigxController extends Controller
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_image') {
                     $field = new MultipleImage($key, [$label]);
-                    $field->uniqueName()->removable();
+                    $field->uniqueName();
                     $validator = $field->getValidator([$key => $value]);
                     if ($validator->fails()) {
                         $msg = $validator->errors()->first();
@@ -494,7 +494,7 @@ class ConfigxController extends Controller
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_file') {
                     $field = new MultipleFile($key, [$label]);
-                    $field->uniqueName()->removable();;
+                    $field->uniqueName();
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
                     $value = implode(',', (array)$value);
