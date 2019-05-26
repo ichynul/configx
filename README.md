@@ -159,12 +159,12 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
 
 ```php
 'configx' => [
-        'new_config_type' => '新配置类型',
-        'new_config_key' => '新配置key',
-        'new_config_name' => '新配置名称',
-        'new_config_element' => '新配置表单元素',
-        'new_config_help' => '新配置help',
-        'new_config_options' => '新配置扩展项',
+        'new_config_type' => '配置类型',
+        'new_config_key' => '配置key',
+        'new_config_name' => '配置名称',
+        'new_config_element' => '配置表单元素',
+        'new_config_help' => '配置help',
+        'new_config_options' => '配置扩展项',
         'header' => '网站设置',
         'desc' => '网站设置设置',
         'element' => [

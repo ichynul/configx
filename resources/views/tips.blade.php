@@ -12,6 +12,9 @@
     <div class="elem number_elem col-sm-12">
         <pre>max : 100<br/>min : 1</pre>
     </div>
+    <div class="elem editor_elem col-sm-12">
+        <pre>editor_name : editor <br/></pre>
+    </div>
     <div class="elem color_elem col-sm-12">
         <pre>format : rgba<br/><br/>format can be : [hex,rgb,rgba]</pre>
     </div>
@@ -77,9 +80,9 @@
 
     function typeChange(value) {
         $('div.elem').addClass('hidden');
-        if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' ||
-            value == 'textarea' || value == 'table' ||
-            value == 'number' || value == 'color' || value == 'multiple_select' || value == 'listbox' || value == 'map' || value == 'image'
+        if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' || value == 'textarea' 
+            || value == 'table' || value == 'number' || value == 'color' || value == 'multiple_select' 
+            || value == 'listbox' || value == 'map' || value == 'image' || value == 'editor'
         ) {
             $(".option-list").removeClass('hidden');
         } else {
@@ -104,8 +107,10 @@
             $('.number_elem').removeClass('hidden');
         } else if (value == 'color') {
             $('.color_elem').removeClass('hidden');
-        } else if (value == 'table') {
+        }else if (value == 'table') {
             $('.table_elem').removeClass('hidden');
+        } else if (value == 'editor') {
+            $('.editor_elem').removeClass('hidden');
         } else if (value == 'image') {
             $('.image_elem').removeClass('hidden');
         } else if (value == 'map') {
