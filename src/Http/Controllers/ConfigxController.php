@@ -243,6 +243,10 @@ class ConfigxController extends Controller
                 }
                 $treeHtml .= '</ol></div>';
             }
+            else
+            {
+                $treeHtml .= '<div class="dd"></div>';
+            }
         }
 
         $treeHtml .= '</div></div>';
