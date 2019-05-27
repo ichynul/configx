@@ -927,7 +927,7 @@ class ConfigxController extends Controller
         } else if (!($etype == 'map' && isset(Form::$availableFields['map']))) {
             $field->value($val['value']);
         }
-        $hasHelp = isset($cx_options[$val['name']]) && isset($cx_options[$val['name']]['help']);
+        $hasHelp = isset($cx_options[$val['name']]) && isset($cx_options[$val['name']]['help']) && !empty($cx_options[$val['name']]['help']);
         $moreHelp =  $hasHelp ?  '<br />' . array_get($cx_options[$val['name']], 'help') : '';
         if ($etype == 'editor') {
             $editor_name = 'editor';
