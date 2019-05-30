@@ -976,8 +976,8 @@ class ConfigxController extends Controller
             'method' => $attributes['method'],
             'buttons' => $buttons,
             'width' => [
-                'label' => 2,
-                'field' => 8,
+                'label' => 4,
+                'field' => 4,
             ],
         ];
         return view('admin::widgets.form', $data);
