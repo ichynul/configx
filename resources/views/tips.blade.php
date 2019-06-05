@@ -1,37 +1,102 @@
 <div class="row">
-    <div class="elem group_elem col-sm-12">Use texts
-        <pre>text1<br/>text2<br/>...</pre>Or key-texts<br />
-        <pre>key1 : text1<br/>key2 : text2<br/>...</pre>
+    <div class="col-sm-12">
+        Common options:
+        <pre>
+divide : after
+//divide position can be : [befor, after]
+//$form->divide(); befor or after this element.
+</pre>
+        Common Methods:
+        <pre>
+@rules : required|min:3|max:12
+@setWidth : 8, 4
+//etc..
+//@methodname : arg1, arg2 ...
+//suported args types [string/integer/folat/boolean]
+</pre>
     </div>
-    <div class="elem select_elem col-sm-12">Or load data from url:
-        <pre>options_url : /admin/api/mydata</pre>
+    <div class="elem group_elem col-sm-12">Use texts
+        <pre>
+text1
+text2
+...
+</pre>
+        Or key-texts
+        <pre>
+key1 : text1
+key2 : text2
+...
+</pre>
+    </div>
+    <div class="elem select_elem col-sm-12">
+        Or load data from url:
+<pre>
+//Options:    
+options_url : /admin/api/mydata
+//Or methods:
+@options : /admin/api/mydata
+</pre>
     </div>
     <div class="elem textarea_elem col-sm-12">
-        <pre>rows : 5</pre>
+        <pre>
+//Options:
+rows : 5
+//Or methods:
+@rows : 5
+</pre>
     </div>
     <div class="elem number_elem col-sm-12">
-        <pre>max : 100<br/>min : 1</pre>
+        <pre>
+//Options:
+max : 100
+min : 1
+//Or methods:
+@max : 100
+@min : 1
+</pre>
     </div>
     <div class="elem editor_elem col-sm-12">
         <pre>editor_name : editor <br/></pre>
     </div>
     <div class="elem color_elem col-sm-12">
-        <pre>format : rgba<br/><br/>format can be : [hex,rgb,rgba]</pre>
+        <pre>
+//Options:
+format : rgba
+//color format can be : [hex, rgb, rgba]
+//Or methods:
+@hex
+@rgb
+@rgba
+
+</pre>
     </div>
     <div class="elem image_elem col-sm-12">
-        <pre>@resize : 320, 240<br/>@insert : public/watermark.png ,center<br/>@crop : 320, 240, 0 , 0<br /></pre>
-        <code>
-            @methodname : arg1,arg2 ...
-        </code><br /><br />
-        Require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
+        //Image Methods:
+        <pre>
+@resize : 320, 240
+@insert : public/watermark.png ,center
+@crop : 320, 240, 0, 0
+@uniqueName
+@move : newdir, newname
+@dir : newdir
+//etc..
+</pre>
+        //Require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
         <br />
-        Usage : <a href="http://image.intervention.io/getting_started/introduction" target="_blank">[Intervention]</a>
+        //Usage : <a href="http://image.intervention.io/getting_started/introduction" target="_blank">[Intervention]</a>
     </div>
     <div class="elem map_elem col-sm-12">
-        <pre>To use map ,you need to edit configs first.<br/><br/>map_provider in /config/admin.php<br/><br/>TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env</pre>
+        <pre>
+//To use map ,you need to edit configs first.
+//map_provider in /config/admin.php
+//TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env
+</pre>
     </div>
     <div class="elem table_elem col-sm-12">
-        <pre>rows : 3<br/>cols : 3</pre>
+        <pre>
+rows : 3
+cols : 3
+</pre>
         <span style="text-align:right;" class="btn btn-success" onclick="createTable();">Build table</span>
         <div class="row" id="table-div" style="margin-top:10px;">
 
@@ -80,14 +145,6 @@
 
     function typeChange(value) {
         $('div.elem').addClass('hidden');
-        if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' || value == 'textarea' 
-            || value == 'table' || value == 'number' || value == 'color' || value == 'multiple_select' 
-            || value == 'listbox' || value == 'map' || value == 'image' || value == 'editor'
-        ) {
-            $(".option-list").removeClass('hidden');
-        } else {
-            $(".option-list").addClass('hidden');
-        }
         if (value == 'map') {
             $("textarea[name='values[c_options]']").addClass('hidden');
         } else {
@@ -107,7 +164,7 @@
             $('.number_elem').removeClass('hidden');
         } else if (value == 'color') {
             $('.color_elem').removeClass('hidden');
-        }else if (value == 'table') {
+        } else if (value == 'table') {
             $('.table_elem').removeClass('hidden');
         } else if (value == 'editor') {
             $('.editor_elem').removeClass('hidden');
@@ -126,8 +183,33 @@
         }
         var arr = text.split(/[\r\n]/);
         if (arr.length > 1) {
-            var rows = arr[0].replace(/\D/g, '') || 3;
-            var cols = arr[1].replace(/\D/g, '') || 3;
+            var cols = 0;
+            var rows = 0;
+            var k = '';
+            var v = '';
+            var kv = [];
+            var text = '';
+
+            for (var i in arr) {
+                if (cols && rows) {
+                    break;
+                }
+                text = arr[i].trim();
+                if (!text) {
+                    continue;
+                }
+                kv = text.split(':');
+                if (kv.length == 2) {
+                    k = kv[0].trim();
+                    v = kv[1].trim();
+                    if (k == 'cols') {
+                        cols = parseInt(v);
+                    }
+                    if (k == 'rows') {
+                        rows = parseInt(v);
+                    }
+                }
+            }
             if (cols < 3 || rows < 3) {
                 alert('cols >= 3, rows >= 3');
                 return;

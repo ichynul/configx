@@ -23,7 +23,6 @@ Add a tabs config in `config/admin.php`:
         'configx' => [
             // Set to `false` if you want to disable this extension
             'enable' => true,
-            //
             'tabs' => [
                 'base' => '基本设置',
                 'shop' => '店铺设置',
@@ -43,9 +42,11 @@ Open `http://your-host/admin/configx`
 
 ## Demo
 
-You can click "+" to add an new config key :
+You can click "+" to config tabs :
 
-step 1 Select config type from `['base' , 'shop' , 'uplaod']`
+add an new config key
+
+step 1 Select config type from `['base']`
 
 step 2 Select form-element type from `['normal', 'date', 'time', 'datetime', 'image', 'yes_or_no', 'number', 'rate', 'editor', 'radio_group' ,'checkbox_group', 'select']`... and so on
 
@@ -84,7 +85,7 @@ cols: 4
 
 This wiil build a table like below :
 
-```php
+````php
 /*
 |-------------------------------------------------------------------------------------
 |  r_label\ c_labe |       c_label1      |        c_label2     |      c_label3       |  ⬅Col labels
@@ -121,7 +122,7 @@ So, you can chang a label <td> to input :
           ↑
   get text from trans
 trans("admin.configx.base.some_key.sometext")
-显示文字时可以从翻译获取文字,样式 `trans.sometext` 
+显示文字时可以从翻译获取文字,样式 `trans.sometext`
 其中 sometext 为翻译的key
 
 
@@ -134,27 +135,6 @@ note : if text = key or text = '' ,render as input form element , otherwise just
 
 
 */
-```
-
-The keys will start with tab-keys in config :
-
-- base.site_name
-- base.site_tel
-- base.site_logo
-- base.site_open
-- (New feature support varable `$admin$` in key,see `ChagneLog.md`)
-- (新特性,支持在 key 中插入可变的$admin$,以便不同 admin 用户有不同设置，比如后台颜色主题、布局的定义,详细用例见`ChagneLog.md`)
-- base.layout_$admin$
-- base.skin_$admin$
-- ...
-- shop.shipping_compnay
-- shop.open_time
-- shop.open_date
-- ...
-- uplaod.size_limit
-- uplaod.allow_type
-- ...
-
 Add a lang config in `resources/lang/{zh-CN}/admin.php`
 
 ```php
@@ -193,33 +173,10 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'multiple_select' => '下拉多选',
             'map' => '地图'
         ],
-        //since 1.0.18
-
-        // When adding or editing a config , you can type in a `config_name` optionaly,
-
-        //if `new_config_name` is empty, get from trans : `trans("admin.configx.{$tab}.{$config_key}")`;
-
-        //1.0.18版本起，添加或编辑配置信息时，可以输入配置名称，如若留空，则从翻译中获取
-
-        'base' => [
-            'site_name' => '网站名称',
-            'site_tel' =>　'电话',
-            'site_logo' => '网站logo',
-            'site_open' => '网站开关'
-        ],
-        'shop' => [
-            'shipping_compnay' => '公司名称',
-            'open_time' =>　'开启时间',
-            'open_date' => '开启日期'
-        ],
-        'uplaod' => [
-            'size_limit' => '大小限制',
-            'allow_type' =>　'允许类型'
-        ],
     ],
 'yes' => '是',
 'no' => '否'
-```
+````
 
 if you need add a new config tab, chang it in `config/admin.php`.
 
