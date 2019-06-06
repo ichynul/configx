@@ -17,7 +17,6 @@ use Encore\Admin\Form\Field\Listbox;
 use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleImage;
 use Encore\Admin\Form\Field\MultipleSelect;
-use Encore\Admin\Form\Field\Divide;
 use Encore\Admin\Form\Field\Number;
 use Encore\Admin\Form\Field\Password;
 use Encore\Admin\Form\Field\Radio;
@@ -37,7 +36,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator as ValidatorTool;
-use League\Flysystem\Exception;
 
 class ConfigxController extends Controller
 {
@@ -51,9 +49,7 @@ class ConfigxController extends Controller
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
         }
-        $tabs = Configx::config('tabs', [
-            'base' => 'Base'
-        ]);
+        $tabs = Configx::config('tabs', ['base' => 'Base']);
         if (isset($cx_options['__configx_tabs__']) && isset($cx_options['__configx_tabs__']['options'])) {
             $tabs = !empty($cx_options['__configx_tabs__']['options']) ? $cx_options['__configx_tabs__']['options'] : $tabs;
         }
@@ -71,6 +67,11 @@ class ConfigxController extends Controller
         } else {
             $tabs['new_config'] = "+";
         }
+
+        if (request('do') == 'backup') {
+            $this->backUp($configx_options);
+        }
+
         if (Configx::config('check_permission', false)) {
             $this->createPermissions($tabs);
         }
@@ -164,7 +165,7 @@ class ConfigxController extends Controller
                 ['text' => trans('admin.configx.header'), 'url' => 'configx/edit'],
                 ['text' => trans('admin.configx.desc')]
             )
-            ->row('<div style="background-color:#fff;">' . $form . '</div>')
+            ->row('<div class="box box-info">' . $form . '</div>')
             ->row(view(
                 'configx::script',
                 [
@@ -189,10 +190,10 @@ class ConfigxController extends Controller
         $treeHtml = '<div class="col-sm-3"><div class="row">';
         $editTitle = trans('admin.edit');
         $deleteTitle = trans('admin.delete');
-        $tags_edit = admin_base_path('configx/edit/0') . '?do=tabs_config';
+        $tabs_edit = admin_base_path('configx/edit/0') . '?do=tabs_config';
 
         foreach ($tree as $k => $v) {
-            $treeHtml .= '<label class="control-label"><i class="fa fa-plus-square-o"></i>&nbsp;' . $k . "<a href='{$tags_edit}' style='margin-left:5px;' title='{$editTitle}'><i class='fa fa-edit'></i></a>" . '</label>';
+            $treeHtml .= '<label class="control-label"><i class="fa fa-plus-square-o"></i>&nbsp;' . $k . "<a href='{$tabs_edit}' style='margin-left:5px;' title='{$editTitle}'><i class='fa fa-edit'></i></a>" . '</label>';
             if (count($v)) {
                 $treeHtml .= '<div class="dd"><ol class="dd-list">';
                 foreach ($v as $c) {
@@ -318,7 +319,6 @@ class ConfigxController extends Controller
             $cx_options['__configx_tabs__']['options'] = $arr;
             $configx_options['description'] = json_encode($cx_options);
             $configx_options->save();
-
             admin_toastr(trans('admin.save_succeeded'));
             return redirect()->to(admin_base_path('configx/edit/0') . '?do=tabs_config');
         }
@@ -423,7 +423,7 @@ class ConfigxController extends Controller
                 $config->update($data);
                 $c_type = $config->getPrefix();
             }
-            $tabs = Configx::config('tabs', []);
+            $tabs = Configx::config('tabs', ['base' => 'Base']);
             if (count($tabs)) {
                 $i = 0;
                 foreach ($tabs as $k => $v) {
@@ -450,7 +450,7 @@ class ConfigxController extends Controller
         if (!$this->validator->passes()) {
             return redirect()->to(admin_base_path('configx/edit'))->withErrors($this->validator->messages())->withInput();
         } else {
-            return redirect()->to(admin_base_path('configx/edit/' . $id));
+            return redirect()->to(admin_base_path('configx/edit'));
         }
     }
 
@@ -493,7 +493,7 @@ class ConfigxController extends Controller
             if (preg_match('/admin_\d+?/i', $config['name'])) {
                 $name = preg_replace('/admin_\d+?/i', '$admin$', $config['name']);
                 if (isset($cx_options[$name])) {
-                    $cx_options[$config['name']]['element'] = $cx_options[$name]['element'];
+                    $cx_options[$config['name']] = $cx_options[$name];
                 }
             }
             if (isset($cx_options[$config['name']])) {
@@ -503,10 +503,11 @@ class ConfigxController extends Controller
                     $label = trans('admin.configx.' . $config['name']);
                 }
 
+                $options = array_get($cx_options[$config['name']], 'options', []);
+
                 $callUserfunctions = false;
                 if ($etype == 'image') {
                     $field = new Image($key, [$label]);
-                    $options = array_get($cx_options[$config['name']], 'options', []);
                     if ($options) {
                         $field = $this->callUserfunctions($field, $options, true);
                         $callUserfunctions = true;
@@ -520,6 +521,14 @@ class ConfigxController extends Controller
                         $allRules['values.c_' . $id] = ['image'];
                         $messages['values.c_' . $id . '.image'] = $msg;
                         $labels['values.c_' . $id] = $label;
+
+                        if (isset($cx_options[$config['name']]['table_field'])) {
+                            $tableKey = preg_replace('/^(\w+?\.\w+?)_\d+_\d+$/i', '$1', $config['name']);
+                            $msg = $validator->errors()->first() ?: $label . ' is error.';
+                            $allRules[$tableKey] = ['required'];
+                            $messages[$tableKey . '.required'] = $msg;
+                            $labels[$tableKey] = $label;
+                        }
                         //
                         admin_warning('Error', $msg, 'error');
                         continue;
@@ -527,7 +536,6 @@ class ConfigxController extends Controller
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_image') {
                     $field = new MultipleImage($key, [$label]);
-                    $options = array_get($cx_options[$config['name']], 'options', []);
                     if ($options) {
                         $field = $this->callUserfunctions($field, $options, true);
                         $callUserfunctions = true;
@@ -542,6 +550,14 @@ class ConfigxController extends Controller
                         $allRules['values.c_' . $id] = ['image'];
                         $messages['values.c_' . $id . '.image'] = $msg;
                         $labels['values.c_' . $id] = $label;
+
+                        if (isset($cx_options[$config['name']]['table_field'])) {
+                            $tableKey = preg_replace('/^(\w+?\.\w+?)_\d+_\d+$/i', '$1', $config['name']);
+                            $msg = $validator->errors()->first() ?: $label . ' is error.';
+                            $allRules[$tableKey] = ['required'];
+                            $messages[$tableKey . '.required'] = $msg;
+                            $labels[$tableKey] = $label;
+                        }
                         //
                         admin_warning('Error', $msg);
                         continue;
@@ -549,7 +565,6 @@ class ConfigxController extends Controller
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'file') {
                     $field = new File($key, [$label]);
-                    $options = array_get($cx_options[$config['name']], 'options', []);
                     if ($options) {
                         $field = $this->callUserfunctions($field, $options, true);
                         $callUserfunctions = true;
@@ -559,7 +574,6 @@ class ConfigxController extends Controller
                     $value = $field->prepare($value);
                 } else if ($etype == 'multiple_file') {
                     $field = new MultipleFile($key, [$label]);
-                    $options = array_get($cx_options[$config['name']], 'options', []);
                     if ($options) {
                         $field = $this->callUserfunctions($field, $options, true);
                         $callUserfunctions = true;
@@ -569,28 +583,33 @@ class ConfigxController extends Controller
                     $value = implode(',', $field->prepare($value));
                 } else if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
                     $value = array_filter((array)$value, 'strlen');
-                    $value = implode(',', $value);
+                    $value = implode(',', (array)$value);
                 } else if ($etype == 'map' && isset($request->values["c_{$id}_latitude"])) {
                     $value = $request->values["c_{$id}_latitude"] . ',' . $request->values["c_{$id}_longitude"];
-                }
-
-                $options = array_get($cx_options[$config['name']], 'options', []);
-
-                if ($options && !$callUserfunctions) {
-                    $field = $this->getConfigField($cx_options, $config, $key, $label);
-                    $field = $this->callUserfunctions($field, $options, true);
-                    $value = $field->prepare($value);
                 } else {
-                    $field = new Text($key, [$label]);
-                    $field->rules('required');
+                    if ($options && !$callUserfunctions) {
+                        $field = $this->getConfigField($cx_options, $config, $key, $label);
+                        $field = $this->callUserfunctions($field, $options, true);
+                        $value = $field->prepare($value);
+                    } else {
+                        $field = new Text($key, [$label]);
+                        $field->rules('required');
+                    }
                 }
-
                 $fieldValidator = $field->getValidator([$key => $value]);
                 if ($fieldValidator !== false && $fieldValidator->fails()) {
                     $msg = $fieldValidator->errors()->first() ?: $label . ' is required.';
                     $allRules['values.c_' . $id] = ['required'];
                     $messages['values.c_' . $id . '.required'] = $msg;
                     $labels['values.c_' . $id] = $label;
+
+                    if (isset($cx_options[$config['name']]['table_field'])) {
+                        $tableKey = preg_replace('/^(\w+?\.\w+?)_\d+_\d+$/i', '$1', $config['name']);
+                        $msg = $fieldValidator->errors()->first() ?: $label . ' is error.';
+                        $allRules[$tableKey] = ['required'];
+                        $messages[$tableKey . '.required'] = $msg;
+                        $labels[$tableKey] = $label;
+                    }
                 }
             } else if (!preg_match('/admin_\d+?/i', $config['name'])) {
                 $cx_options[$config['name']] = ['options' => [], 'element' => 'normal', 'help' => '', 'name' => '', 'order' => 999];
@@ -611,11 +630,8 @@ class ConfigxController extends Controller
     {
         if ($save) {
             $field->rules('required');
-        } else {
-            if (!$field instanceof Checkbox) {
-                $field->rules('required');
-            }
         }
+
         foreach ($options as $k => $v) {
             if (preg_match('/^@\w+/', $k)) {
                 $args = array_filter(explode(',', $v));
@@ -650,6 +666,7 @@ class ConfigxController extends Controller
 
     public function postSort(Request $request)
     {
+        $cx_options = [];
         $configx_options = ConfigxModel::where('name', '__configx__')->first();
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
@@ -696,7 +713,6 @@ class ConfigxController extends Controller
         if ($val['id'] == 'type') {
             if ($config) {
                 $field = new Text($rowname, [$label]);
-                $field->setWidth(10, 2);
                 $field->readOnly();
                 $typekey = explode('.', $editName)[0];
                 $typename = array_get($tabs, $typekey);
@@ -716,11 +732,11 @@ class ConfigxController extends Controller
             } else {
                 $field = new Radio($rowname, [$label]);
                 array_pop($tabs);
-                $field->options($tabs)->setWidth(10, 2);
+                $field->options($tabs)
+                    ->setWidth(9, 2);
             }
         } else if ($val['id'] == 'key' || $val['id'] == 'tabs_key') {
             $field = new Text($rowname, [$label]);
-            $field->setWidth(10, 2);
 
             if ($val['id'] == 'tabs_key') {
                 $field->value('__configx_tabs__');
@@ -733,7 +749,6 @@ class ConfigxController extends Controller
             }
         } else if ($val['id'] == 'name') {
             $field = new Text($rowname, [$label]);
-            $field->setWidth(10, 2);
             if ($config) {
                 if ($config && isset($cx_options[$config['name']]['name'])) {
                     $field->value($cx_options[$config['name']]['name']);
@@ -755,13 +770,12 @@ class ConfigxController extends Controller
             }
             $field->options($support)
                 ->default('normal')
-                ->setWidth(10, 2);
+                ->setWidth(9, 2);
             if ($config && isset($cx_options[$config['name']]['element'])) {
                 $field->value($cx_options[$config['name']]['element']);
             }
         } else if ($val['id'] == 'help') {
             $field = new Text($rowname, [$label]);
-            $field->setWidth(10, 2);
             if ($config && isset($cx_options[$config['name']]['help'])) {
                 $field->value($cx_options[$config['name']]['help']);
             }
@@ -796,17 +810,12 @@ class ConfigxController extends Controller
                 }
                 $arr = [];
                 foreach ($tabs as $k => $v) {
-                    if ($k == $v) {
-                        $arr[] = $k;
-                    } else {
-                        $arr[] = $k . '  :  ' . $v;
-                    }
+                    $arr[] = $k . '  :  ' . $v;
                 }
                 $field->value(implode(PHP_EOL, $arr));
             }
 
-            $field->setWidth(10, 2)
-                ->rows(5);
+            $field->rows(5);
         } else {
             if (!isset($cx_options[$val['name']])) {
                 $field = new Text($rowname, [$label]);
@@ -822,11 +831,10 @@ class ConfigxController extends Controller
         if (isset($cx_options[$val['name']]['options'])) {
             $options = array_get($cx_options[$val['name']], 'options', []);
             if (isset($options['divide'])) {
-                $divide = new Divide('divide', ['divide']);
                 if ($options['divide'] == 'befor') {
-                    return $divide->render() . $field->render();
+                    return '<hr style="width: 99%;">' . $field->render();
                 } else {
-                    return $field->render() . $divide->render();
+                    return $field->render() . '<hr style="width: 90%;">';
                 }
             }
         }
@@ -834,7 +842,7 @@ class ConfigxController extends Controller
         return $field->render();
     }
 
-    function optionsFilter($options)
+    protected function optionsFilter($options)
     {
         $_options = [];
         unset($_options['divide']);
@@ -987,19 +995,28 @@ class ConfigxController extends Controller
                     $rows[] = $tableRow;
                 }
                 $field->setRows($rows);
+                $field->setErrorKey($val['name']);
             } else {
                 $field = new html('', [$label]);
             }
         } else {
-            $field = new Text($rowname, [$label]);
+            if (isset($options['__element__'])) {
+                if (isset(Form::$availableFields[$options['__element__']])) {
+                    $field = new Form::$availableFields[$options['__element__']]($rowname, [$label]);
+                } else {
+                    $field = new Text($rowname, [$label]);
+                }
+            } else {
+                $field = new Text($rowname, [$label]);
+            }
         }
         //
         if ($etype == 'checkbox_group' || $etype == 'tags' || $etype == 'multiple_select' || $etype == 'listbox') {
             $field->value(array_filter(explode(',', $val['value'])));
-        } else if ($etype == 'multiple_image') {
-            $images = array_filter(explode(',', $val['value']));
-            if ($val['value'] && count($images)) {
-                $field->value($images);
+        } else if ($etype == 'multiple_image' || $etype == 'multiple_file') {
+            $files = array_filter(explode(',', $val['value']));
+            if ($val['value'] && count($files)) {
+                $field->value($files);
             }
         } else if (!($etype == 'map' && isset(Form::$availableFields['map']))) {
             $field->value($val['value']);
@@ -1016,6 +1033,8 @@ class ConfigxController extends Controller
             }
         } else if ($etype == 'map' && !isset(Form::$availableFields['map'])) {
             $field->help('<span class="label label-warning">The map is unuseable!</span>' . $moreHelp);
+        } else if (isset($options['__element__']) && !isset(Form::$availableFields[$options['__element__']])) {
+            $field->help('<span class="label label-warning">The ' . $options['__element__'] . ' is unuseable! Have Encore\Admin\Form::extend("' . $options['__element__'] . '",NewElement::class) called ?</span>' . $moreHelp);
         } else if ($hasHelp) {
             $field->help($cx_options[$val['name']]['help']);
         }
@@ -1024,7 +1043,6 @@ class ConfigxController extends Controller
         if ($options) {
             $field = $this->callUserfunctions($field, $options, false);
         }
-
         return $field;
     }
 
@@ -1063,5 +1081,19 @@ class ConfigxController extends Controller
             ],
         ];
         return view('admin::widgets.form', $data);
+    }
+
+    protected function backUp($configx_options)
+    {
+        if ($configx_options && $configx_options['description']) {
+            app('files')->put(
+                storage_path('app/public/configx.json'),
+                $configx_options['description']
+            );
+
+            admin_success(trans('admin.succeeded'), "Configx options save to : /wwwroot/storage/app/public/configx.json");
+        } else {
+            admin_warning(trans('admin.failed'), "Configx options is empty!");
+        }
     }
 }

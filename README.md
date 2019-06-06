@@ -27,9 +27,10 @@ Add a tabs config in `config/admin.php`:
                 'base' => '基本设置',
                 'shop' => '店铺设置',
                 'uplaod' => '上传设置',
-                'image' => '' // if tab name is empty , get from trans : trans('admin.configx.tabs.image'); tab名称留空则从翻译中获取
+                'image' => '' // if tab name is empty, get from trans : trans('admin.configx.tabs.image'); tab名称留空则从翻译中获取
             ],
-            // Whether check group permissions. if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
+            // Whether check group permissions. 
+            //if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
             'check_permission' => false
         ],
     ],

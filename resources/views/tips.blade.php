@@ -1,10 +1,10 @@
+Help<a style="float:right;padding:3px 8px;" href="?do=backup" class="btn btn-default"><i class="fa fa-floppy-o"></i>&nbsp;Backup configx options</a>
 <div class="row">
     <div class="col-sm-12">
         Common options:
         <pre>
 divide : after
-//divide position can be : [befor, after]
-//$form->divide(); befor or after this element.
+//&lt;hr&gt; befor or after this element.
 </pre>
         Common Methods:
         <pre>
@@ -13,6 +13,16 @@ divide : after
 //etc..
 //@methodname : arg1, arg2 ...
 //suported args types [string/integer/folat/boolean]
+</pre>
+    </div>
+    <div class="elem normal_elem col-sm-12">
+        Extend element:
+        <pre>
+__element__ : new_element
+
+//Extend element in Admin/bootstrap.php :
+Encore\Admin\Form::extend('new_element', App/Admin/Extensions/NewElement::class);
+
 </pre>
     </div>
     <div class="elem group_elem col-sm-12">Use texts
@@ -30,7 +40,7 @@ key2 : text2
     </div>
     <div class="elem select_elem col-sm-12">
         Or load data from url:
-<pre>
+        <pre>
 //Options:    
 options_url : /admin/api/mydata
 //Or methods:
@@ -56,7 +66,7 @@ min : 1
 </pre>
     </div>
     <div class="elem editor_elem col-sm-12">
-        <pre>editor_name : editor <br/></pre>
+        <pre>editor_name : editor </pre>
     </div>
     <div class="elem color_elem col-sm-12">
         <pre>
@@ -73,17 +83,39 @@ format : rgba
     <div class="elem image_elem col-sm-12">
         //Image Methods:
         <pre>
-@resize : 320, 240
-@insert : public/watermark.png ,center
-@crop : 320, 240, 0, 0
 @uniqueName
+@sequenceName
+@removable
 @move : newdir, newname
 @dir : newdir
+@name : newname
+@resize : 320, 240
+@insert : storage/public/watermark.png ,center
+@crop : 320, 240, 0, 0
 //etc..
 </pre>
-        //Require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
+        //Some methods require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
         <br />
         //Usage : <a href="http://image.intervention.io/getting_started/introduction" target="_blank">[Intervention]</a>
+    </div>
+    <div class="elem map_elem col-sm-12">
+        <pre>
+//To use map ,you need to edit configs first.
+//map_provider in /config/admin.php
+//TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env
+</pre>
+    </div>
+    <div class="elem file_elem col-sm-12">
+        //File Methods:
+        <pre>
+@uniqueName
+@sequenceName
+@removable
+@move : newdir, newname
+@dir : newdir
+@name : newname
+//etc..
+</pre>
     </div>
     <div class="elem map_elem col-sm-12">
         <pre>
@@ -168,10 +200,14 @@ cols : 3
             $('.table_elem').removeClass('hidden');
         } else if (value == 'editor') {
             $('.editor_elem').removeClass('hidden');
-        } else if (value == 'image') {
+        } else if (value == 'image' || value == 'multiple_image') {
             $('.image_elem').removeClass('hidden');
+        } else if (value == 'file' || value == 'multiple_file') {
+            $('.file_elem').removeClass('hidden');
         } else if (value == 'map') {
             $('.map_elem').removeClass('hidden');
+        } else if (value == 'normal') {
+            $('.normal_elem').removeClass('hidden');
         }
     }
 
