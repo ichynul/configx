@@ -1,4 +1,4 @@
-Help<a style="float:right;padding:3px 8px;" href="?do=backup" class="btn btn-default"><i class="fa fa-floppy-o"></i>&nbsp;Backup configx options</a>
+Help
 <div class="row">
     <div class="col-sm-12">
         Common options:
@@ -9,20 +9,30 @@ divide : after
         Common Methods:
         <pre>
 @rules : required|min:3|max:12
-@setWidth : 8, 4
+@setWidth : 6, 2
 //etc..
 //@methodname : arg1, arg2 ...
 //suported args types [string/integer/folat/boolean]
 </pre>
     </div>
     <div class="elem normal_elem col-sm-12">
+        Replace default element:
+        <pre>
+__element__ : mobile
+//__element__ : ip
+//__element__ : url
+//__element__ : email
+//__element__ : currency
+//etc..
+</pre>
         Extend element:
         <pre>
-__element__ : new_element
+__element__ : test_text
 
 //Extend element in Admin/bootstrap.php :
-Encore\Admin\Form::extend('new_element', App/Admin/Extensions/NewElement::class);
-
+Form::extend('new_element', App/Admin/Extensions/NewElement::class);
+//Useage
+__element__ : new_element
 </pre>
     </div>
     <div class="elem group_elem col-sm-12">Use texts
@@ -41,7 +51,7 @@ key2 : text2
     <div class="elem select_elem col-sm-12">
         Or load data from url:
         <pre>
-//Options:    
+//Options:
 options_url : /admin/api/mydata
 //Or methods:
 @options : /admin/api/mydata
@@ -97,13 +107,6 @@ format : rgba
         //Some methods require intervention/image <a href="http://image.intervention.io/getting_started/installation" target="_blank">[installation]</a>
         <br />
         //Usage : <a href="http://image.intervention.io/getting_started/introduction" target="_blank">[Intervention]</a>
-    </div>
-    <div class="elem map_elem col-sm-12">
-        <pre>
-//To use map ,you need to edit configs first.
-//map_provider in /config/admin.php
-//TENCENT_MAP_API_KEY or GOOGLE_API_KEY in /.env
-</pre>
     </div>
     <div class="elem file_elem col-sm-12">
         //File Methods:
@@ -177,11 +180,6 @@ cols : 3
 
     function typeChange(value) {
         $('div.elem').addClass('hidden');
-        if (value == 'map') {
-            $("textarea[name='values[c_options]']").addClass('hidden');
-        } else {
-            $("textarea[name='values[c_options]']").removeClass('hidden');
-        }
         if (value == 'radio_group' || value == 'checkbox_group' || value == 'select' || value == 'multiple_select' ||
             value == 'listbox') {
             $('.group_elem').removeClass('hidden');

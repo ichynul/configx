@@ -3,6 +3,9 @@
 namespace Ichynul\Configx;
 
 use Illuminate\Support\ServiceProvider;
+use Encore\Admin\Form;
+use Encore\Admin\Admin;
+use Ichynul\Configx\Field\TestText;
 
 class ConfigxServiceProvider extends ServiceProvider
 {
@@ -11,8 +14,8 @@ class ConfigxServiceProvider extends ServiceProvider
      */
     public function boot(Configx $extension)
     {
-        if (! Configx::boot()) {
-            return ;
+        if (!Configx::boot()) {
+            return;
         }
 
         if ($views = $extension->views()) {
@@ -20,7 +23,12 @@ class ConfigxServiceProvider extends ServiceProvider
         }
 
         $this->app->booted(function () {
-            Configx::routes(__DIR__.'/../routes/web.php');
+            Configx::routes(__DIR__ . '/../routes/web.php');
+        });
+
+        Admin::booting(function () {
+
+            Form::extend('test_text', TestText::class);
         });
     }
 }

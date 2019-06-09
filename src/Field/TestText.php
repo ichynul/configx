@@ -1,12 +1,12 @@
 <?php
 
-namespace Ichynul\Configx\Extend;
+namespace Ichynul\Configx\Field;
 
 use Encore\Admin\Form\Field\Text;
 
 class TestText extends Text
 {
-    protected $view = 'configx::extend.testtext';
+    protected $view = 'configx::field.testtext';
 
     /**
      * Prepare for a field value before update or insert.
