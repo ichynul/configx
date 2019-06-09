@@ -17,15 +17,6 @@ class FormWgt extends Form
     ];
 
     /**
-     * Store a new record.
-     * 
-     */
-    public function store()
-    {
-        $data = \request()->all();
-    }
-
-    /**
      * Determine if form fields has files.
      *
      * @return bool
