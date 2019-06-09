@@ -142,6 +142,8 @@ cols : 3
 </div>
 <script>
     var buildGrid = {};
+    var builded = false;
+
     $(function() {
         $("body").on("ifChecked", "input:radio[name='values[c_element]']", function() {
             typeChange(this.value);
@@ -196,6 +198,10 @@ cols : 3
             $('.color_elem').removeClass('hidden');
         } else if (value == 'table') {
             $('.table_elem').removeClass('hidden');
+            if(!builded)
+            {
+                $("button[type='submit']").attr('disabled','disabled');
+            }
         } else if (value == 'editor') {
             $('.editor_elem').removeClass('hidden');
         } else if (value == 'image' || value == 'multiple_image') {
@@ -291,5 +297,7 @@ cols : 3
             html += '</t>';
         }
         $('#table-div').html(html);
+        builded = true;
+        $("button[type='submit']").removeAttr('disabled');
     }
 </script>

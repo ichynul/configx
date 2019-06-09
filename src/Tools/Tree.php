@@ -78,10 +78,13 @@ class Tree
 
         foreach ($tree as &$fields) {
             foreach ($fields as &$field) {
-                $options = [];
-                if (isset($cx_options[$field['name']])) {
-                    $options = array_get($cx_options[$field['name']], 'options', []);
+
+                if (!key_exists($field['name'], $cx_options)) {
+                    $cx_options[$field['name']] = [];
                 }
+
+                $options = array_get($cx_options[$field['name']], 'options', []);
+
                 $label = array_get($cx_options[$field['name']], 'name');
                 if (!$label) {
                     $label = trans('admin.configx.' . $field['name']);

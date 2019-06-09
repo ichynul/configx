@@ -21,7 +21,11 @@
                     <span class="dd-drag"><i class="fa fa-arrows"></i>&nbsp;{!! $field['label'] !!}-</span><b>[{!! $field['type_name'] !!}]</b>
                     <span class="pull-right dd-nodrag">
                         <a title="{!! $editTitle !!}" href="{!! $field['href'] !!}"><i class="fa fa-edit"></i></a>
+                        @if($field['id'] != $current_id)
                         <a style="margin-left:5px;" title="{!! $editTitle !!}" onclick="delConfig({!! $field['id'] !!});" href="javascript:;"><i class="fa fa-trash-o"></i></a>
+                        @else
+                        <a style="margin-left:5px;cursor: not-allowed;" title="{!! $editTitle !!}" href="javascript:;"><i class="fa fa-trash-o"></i></a>
+                        @endif
                     </span>
                     @if(isset($field['tds']) && count($field['tds']))
                     <ul class="dd-list">

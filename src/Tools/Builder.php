@@ -181,6 +181,10 @@ class Builder
     {
         $rowname = 'c_' . $val['id'] . '_';
 
+        if (!key_exists($val['name'], $cx_options)) {
+            $cx_options[$val['name']] = [];
+        }
+
         $etype = array_get($cx_options[$val['name']], 'element', 'normal');
         $options = array_get($cx_options[$val['name']], 'options', []);
 
@@ -304,7 +308,7 @@ class Builder
     {
         $tableInfo = json_decode($val['description'], 1);
         if ($tableInfo) {
-            Tool::createTableConfigs($tableInfo, []);
+            Tool::createTableConfigs($tableInfo, $cx_options);
         }
         $field = new Table($label);
         $rows = [];
@@ -312,6 +316,9 @@ class Builder
             $tableRow = new TableRow();
             for ($j = 0; $j < $options['cols']; $j += 1) {
                 $fieldKey = $val['name'] . '_' . $i . '_' . $j;
+                if (!key_exists($fieldKey, $tableInfo)) {
+                    continue;
+                }
                 if ($tableInfo[$fieldKey] == $fieldKey || '' == $tableInfo[$fieldKey]) {
                     $label = $cx_options && isset($cx_options[$fieldKey]) ? array_get($cx_options[$fieldKey], 'name') : '';
                     if (!$label) {
@@ -319,7 +326,15 @@ class Builder
                     }
                     $conf = ConfigxModel::where('name', $fieldKey)->first();
                     if ($conf) {
+
+                        $etype = array_get($cx_options[$conf['name']], 'element', 'normal');
+
+                        if ($etype == 'normal' && $options['cols'] > 8) {
+                            array_set($cx_options[$conf['name']], 'element', 'textSmall');
+                        }
+
                         $tableField = static::getConfigField($cx_options, $conf, $label, $mode);
+
                         $tableRow->pushField($tableField, 1);
                     }
                 } else {

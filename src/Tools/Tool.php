@@ -4,6 +4,8 @@ namespace Ichynul\Configx\Tools;
 
 use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
+use Illuminate\Support\Arr;
+use Illuminate\Support\MessageBag;
 
 class Tool
 {
@@ -114,10 +116,10 @@ class Tool
         return $cx_options;
     }
 
-    public static function createTableConfigs($tableInfo, $cx_options)
+    public static function createTableConfigs($tableInfo, $cx_options = [])
     {
         if (empty($tableInfo)) {
-            return;
+            return $cx_options;
         }
         foreach ($tableInfo as $k => $v) {
             if ($k == $v || '' == $v) {
@@ -137,7 +139,24 @@ class Tool
                 }
             }
         }
+
         return $cx_options;
+    }
+
+    public static function checkTableKeys($mainKey, $tableInfo)
+    {
+        if (empty($tableInfo)) {
+            return [];
+        }
+
+        $_tableInfo = [];
+        foreach ($tableInfo as $k => $v) {
+            $newKey = $mainKey . preg_replace('/.+(_\d+_\d+)$/', '$1', $k);
+            
+            $_tableInfo[$newKey] = $v;
+        }
+        
+        return $_tableInfo;
     }
 
     public static function createPermissions($tabs)
@@ -156,4 +175,86 @@ class Tool
         }
         return $tabs;
     }
+
+    public static function prepareUpdate($fields, $data)
+    {
+        $prepared = [];
+
+        foreach ($fields as $field) {
+            $columns = $field->column();
+
+            if (!Arr::has($data, $columns)) {
+                continue;
+            }
+
+            $value = static::getDataByColumn($data, $field->column());
+
+            $value = $field->prepare($value);
+
+            if (is_array($columns)) {
+
+                $key = array_values($columns)[0];
+
+                Arr::set($prepared, $key, implode(',', array_filter(array_values($value))));
+            } elseif (is_string($columns)) {
+
+                if ($field instanceof MultipleFile) {
+
+                    $value = implode(',', $value);
+                } else if ($field instanceof MultipleSelect) {
+
+                    $value = implode(',', $value);
+                }
+
+                Arr::set($prepared, $columns, $value);
+            }
+        }
+
+        return $prepared;
+    }
+
+    /**
+     * Merge validation messages from input validators.
+     *
+     * @param \Illuminate\Validation\Validator[] $validators
+     *
+     * @return MessageBag
+     */
+    public static function mergeValidationMessages($validators)
+    {
+        $messageBag = new MessageBag();
+
+        foreach ($validators as $validator) {
+            $messageBag = $messageBag->merge($validator->messages());
+        }
+
+        return $messageBag;
+    }
+    /**
+     * @param array        $data
+     * @param string|array $columns
+     *
+     * @return array|mixed
+     */
+    public static function getDataByColumn($data, $columns)
+    {
+
+        if (is_string($columns)) {
+
+            return Arr::get($data, $columns);
+        }
+
+        if (is_array($columns)) {
+            $value = [];
+            foreach ($columns as $name => $column) {
+                if (!Arr::has($data, $column)) {
+                    continue;
+                }
+                $value[$name] = Arr::get($data, $column);
+            }
+
+            return $value;
+        }
+    }
+
 }

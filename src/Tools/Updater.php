@@ -2,43 +2,15 @@
 
 namespace Ichynul\Configx\Tools;
 
-use Encore\Admin\Form\Field\MultipleFile;
-use Encore\Admin\Form\Field\MultipleSelect;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\RowTable\Field\Collect;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class Updater
 {
-    protected static function cxOptions()
-    {
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
-        $cx_options = [];
-
-        if ($configx_options && $configx_options['description']) {
-
-            $cx_options = json_decode($configx_options['description'], 1);
-        } else {
-            $configx_options = $this->createConfigx();
-        }
-
-        return $cx_options;
-    }
-
-    protected static function cxSave($cx_options)
-    {
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
-
-        $cx_options = Tool::remove($cx_options);
-        $configx_options['description'] = json_encode($cx_options);
-        $configx_options->save();
-    }
-
     public static function saveConfigOptions($id = 0, $request)
     {
         $cx_options = static::cxOptions();
@@ -60,7 +32,7 @@ class Updater
         }
     }
 
-    public static function saveTabs($id = 0, $tabs_options)
+    public static function saveTabsOptions($id = 0, $tabs_options)
     {
         $cx_options = static::cxOptions();
 
@@ -96,7 +68,7 @@ class Updater
 
         Tree::getConfigTabs($tabs, $cx_options);
 
-        $mainConfigs = array_values(Tree::getTree());
+        $rootConfigs = array_values(Tree::getTree());
 
         $data = $request->all();
 
@@ -104,9 +76,9 @@ class Updater
 
         $fields = [];
 
-        foreach ($mainConfigs as $values) {
+        foreach ($rootConfigs as $root) {
 
-            foreach ($values as $val) {
+            foreach ($root as $val) {
 
                 $label = array_get($cx_options[$val['name']], 'name', '');
                 if (!$label) {
@@ -136,7 +108,7 @@ class Updater
             }
         }
 
-        $prepare = static::prepareUpdate($fields, $data);
+        $prepare = Tool::prepareUpdate($fields, $data);
 
         \DB::beginTransaction();
 
@@ -149,7 +121,7 @@ class Updater
 
         \DB::commit();
 
-        $message = static::mergeValidationMessages($failedValidators);
+        $message = Tool::mergeValidationMessages($failedValidators);
 
         admin_toastr(trans('admin.update_succeeded'));
 
@@ -182,43 +154,6 @@ class Updater
         }
     }
 
-    protected static function prepareUpdate($fields, $data)
-    {
-        $prepared = [];
-
-        foreach ($fields as $field) {
-            $columns = $field->column();
-
-            if (!Arr::has($data, $columns)) {
-                continue;
-            }
-
-            $value = static::getDataByColumn($data, $field->column());
-
-            $value = $field->prepare($value);
-
-            if (is_array($columns)) {
-
-                $key = array_values($columns)[0];
-
-                Arr::set($prepared, $key, implode(',', array_filter(array_values($value))));
-            } elseif (is_string($columns)) {
-
-                if ($field instanceof MultipleFile) {
-
-                    $value = implode(',', $value);
-                } else if ($field instanceof MultipleSelect) {
-
-                    $value = implode(',', $value);
-                }
-
-                Arr::set($prepared, $columns, $value);
-            }
-        }
-
-        return $prepared;
-    }
-
     protected static function saveValue($columns, $value)
     {
         $key = $columns;
@@ -234,50 +169,6 @@ class Updater
 
         $config->value = $value;
         $config->update();
-    }
-
-    /**
-     * Merge validation messages from input validators.
-     *
-     * @param \Illuminate\Validation\Validator[] $validators
-     *
-     * @return MessageBag
-     */
-    protected static function mergeValidationMessages($validators)
-    {
-        $messageBag = new MessageBag();
-
-        foreach ($validators as $validator) {
-            $messageBag = $messageBag->merge($validator->messages());
-        }
-
-        return $messageBag;
-    }
-    /**
-     * @param array        $data
-     * @param string|array $columns
-     *
-     * @return array|mixed
-     */
-    protected static function getDataByColumn($data, $columns)
-    {
-
-        if (is_string($columns)) {
-
-            return Arr::get($data, $columns);
-        }
-
-        if (is_array($columns)) {
-            $value = [];
-            foreach ($columns as $name => $column) {
-                if (!Arr::has($data, $column)) {
-                    continue;
-                }
-                $value[$name] = Arr::get($data, $column);
-            }
-
-            return $value;
-        }
     }
 
     public static function saveOptions($id = 0, $cx_options, Request $request)
@@ -368,8 +259,9 @@ class Updater
             }
             $data = ['name' => $new_key, 'value' => $defaultVal, 'description' => $request->values['c_name'] ?: trans('admin.configx.' . $new_key)];
             if ($request->values['c_element'] == "table") {
-                $cx_options = Tool::createTableConfigs($request->table, $cx_options);
-                $data['description'] = json_encode($request->table);
+                $table = Tool::checkTableKeys($new_key, $request->table);
+                $cx_options = Tool::createTableConfigs($table, $cx_options);
+                $data['description'] = json_encode($table);
             }
             $config = new ConfigxModel($data);
             $config->save();
@@ -377,8 +269,9 @@ class Updater
         } else {
             $data = ['name' => $new_key];
             if ($request->values['c_element'] == "table") {
-                $cx_options = Tool::createTableConfigs($request->table, $cx_options);
-                $data['description'] = json_encode($request->table);
+                $table = Tool::checkTableKeys($new_key, $request->table);
+                $cx_options = Tool::createTableConfigs($table, $cx_options);
+                $data['description'] = json_encode($table);
             }
             $config->update($data);
             $c_type = $config->getPrefix();
@@ -404,5 +297,29 @@ class Updater
         $cx_options = Tool::sortTGroupOptions($c_type, $cx_options);
 
         return $cx_options;
+    }
+
+    protected static function cxOptions()
+    {
+        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+        $cx_options = [];
+
+        if ($configx_options && $configx_options['description']) {
+
+            $cx_options = json_decode($configx_options['description'], 1);
+        } else {
+            $configx_options = $this->createConfigx();
+        }
+
+        return $cx_options;
+    }
+
+    protected static function cxSave($cx_options)
+    {
+        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+
+        $cx_options = Tool::remove($cx_options);
+        $configx_options['description'] = json_encode($cx_options);
+        $configx_options->save();
     }
 }
