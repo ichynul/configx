@@ -13,7 +13,7 @@
 
             var index = $(".nav.nav-tabs li").index($(".nav.nav-tabs li.active"));
             var _index = $("input[name='tabindex']").val();
-            if (index != _index && !$('input.do').val()) {
+            if (index != _index) {
                 $(".nav.nav-tabs li").eq(_index).find("a").trigger('click');
             }
         }
