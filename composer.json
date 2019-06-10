@@ -13,7 +13,7 @@
         "php": ">=7.0.0",
         "encore/laravel-admin": "~1.6",
         "laravel-admin-ext/config": "^1.0",
-        "ichynul/row-table": "^1.0"
+        "ichynul/row-table": "^1.1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~6.0"
