@@ -23,13 +23,7 @@ class Builder
             $cx_options[$val['name']] = [];
         }
 
-        $label = array_get($cx_options[$val['name']], 'name', '');
-
-        if (!$label) {
-            $label = trans('admin.configx.' . $val['name']);
-        }
-
-        $field = static::getConfigField($cx_options, $val, $label, self::Edit);
+        $field = static::getConfigField($cx_options, $val, self::Edit);
 
         if (in_array($val['id'], ['type', 'key', 'element'])) {
             $field->setLabelClass(['asterisk']);
@@ -177,9 +171,14 @@ class Builder
         return $field->render();
     }
 
-    public static function getConfigField($cx_options = [], $val, $label, $mode)
+    public static function getConfigField($cx_options = [], $val, $mode)
     {
         $rowname = 'c_' . $val['id'] . '_';
+
+        $label = array_get($cx_options[$val['name']], 'name', '');
+        if (!$label) {
+            $label = trans('admin.configx.' . $val['name']);
+        }
 
         if (!key_exists($val['name'], $cx_options)) {
             $cx_options[$val['name']] = [];
@@ -258,8 +257,6 @@ class Builder
 
         if ($mode == self::Edit) {
             static::fillData($field, $etype, $rowname, $val['value']);
-        } else {
-            $field->rules('required');
         }
 
         if (isset($cx_options[$val['name']]['help']) && !empty($cx_options[$val['name']]['help'])) {
@@ -274,6 +271,10 @@ class Builder
             if (in_array($etype, ['image', 'file', 'multiple_image', 'multiple_file'])) {
 
                 $field->uniqueName();
+            } else {
+                if ($mode == self::UPDATE) {
+                    $field->rules('required');
+                }
             }
         }
 
@@ -325,10 +326,7 @@ class Builder
                     continue;
                 }
                 if ($tableInfo[$fieldKey] == $fieldKey || '' == $tableInfo[$fieldKey]) {
-                    $label = $cx_options && isset($cx_options[$fieldKey]) ? array_get($cx_options[$fieldKey], 'name') : '';
-                    if (!$label) {
-                        $label = trans($fieldKey);
-                    }
+
                     $conf = ConfigxModel::where('name', $fieldKey)->first();
                     if ($conf) {
 
@@ -338,7 +336,7 @@ class Builder
                             array_set($cx_options[$conf['name']], 'element', 'textSmall');
                         }
 
-                        $tableField = static::getConfigField($cx_options, $conf, $label, $mode);
+                        $tableField = static::getConfigField($cx_options, $conf, $mode);
 
                         $tableRow->pushField($tableField, 1);
                     }

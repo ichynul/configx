@@ -80,12 +80,7 @@ class Updater
 
             foreach ($root as $val) {
 
-                $label = array_get($cx_options[$val['name']], 'name', '');
-                if (!$label) {
-                    $label = trans('admin.configx.' . $val['name']);
-                }
-
-                $field = Builder::getConfigField($cx_options, $val, $val['name'], Builder::UPDATE);
+                $field = Builder::getConfigField($cx_options, $val, Builder::UPDATE);
 
                 $fields[] = $field;
 
@@ -156,6 +151,10 @@ class Updater
 
     protected static function saveValue($columns, $value)
     {
+        if (empty($value)) {
+            return;
+        }
+
         $key = $columns;
 
         if (is_array($columns)) {
