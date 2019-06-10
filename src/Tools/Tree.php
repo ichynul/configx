@@ -63,6 +63,9 @@ class Tree
                 }
                 static::$tree[$value][] = $val;
             }
+            if (empty($subs)) {
+                static::$tree[$value] = [];
+            }
         }
     }
 
