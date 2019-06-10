@@ -147,7 +147,7 @@ class Displayer
                 ['text' => trans('admin.configx.header'), 'url' => 'configx/edit'],
                 ['text' => trans('admin.configx.desc')]
             )
-            ->row('<div class="box box-info">' . $form . '</div>')->row(view(
+            ->row('<div class="box box-info">' . $form->render() . '</div>')->row(view(
             'configx::script',
             [
                 'call_back' => admin_base_path('configx/sort'),
