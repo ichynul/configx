@@ -83,7 +83,7 @@ class Builder
                 //
             } else {
                 $field = new Radio($rowname, [$label]);
-          
+
                 $field->options($tabs)
                     ->setWidth(9, 2);
             }
@@ -258,6 +258,8 @@ class Builder
 
         if ($mode == self::Edit) {
             static::fillData($field, $etype, $rowname, $val['value']);
+        } else {
+            $field->rules('required');
         }
 
         if (isset($cx_options[$val['name']]['help']) && !empty($cx_options[$val['name']]['help'])) {
@@ -267,9 +269,12 @@ class Builder
         if ($options) {
 
             $field = Tool::callUserfunctions($field, $options);
-        } else if (in_array($etype, ['multiple_image', 'multiple_file'])) {
+        } else {
 
-            $field->uniqueName();
+            if (in_array($etype, ['image', 'file', 'multiple_image', 'multiple_file'])) {
+
+                $field->uniqueName();
+            }
         }
 
         return $field;
