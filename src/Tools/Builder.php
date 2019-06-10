@@ -83,7 +83,7 @@ class Builder
                 //
             } else {
                 $field = new Radio($rowname, [$label]);
-                array_pop($tabs);
+          
                 $field->options($tabs)
                     ->setWidth(9, 2);
             }
