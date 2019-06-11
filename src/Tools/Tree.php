@@ -24,11 +24,13 @@ class Tree
 
     public static function getConfigTabs($tabs, $cx_options = [])
     {
+        $check_permission = Configx::config('check_permission', false);
+
         foreach ($tabs as $key => &$value) {
             if (empty($value)) {
                 $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
             }
-            if (Configx::config('check_permission', false) && !Admin::user()->can('confix.tab.' . $key)) {
+            if ($check_permission && !Admin::user()->can('confix.tab.' . $key)) {
                 continue;
             }
             $subs = ConfigxModel::group($key);
