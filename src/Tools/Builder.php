@@ -14,7 +14,7 @@ use Ichynul\RowTable\TableRow;
 
 class Builder
 {
-    public const Edit = 1;
+    public const EDIT = 1;
     public const UPDATE = 2;
 
     public static function createField($val, $cx_options = [])
@@ -23,7 +23,7 @@ class Builder
             $cx_options[$val['name']] = [];
         }
 
-        $field = static::getConfigField($cx_options, $val, self::Edit);
+        $field = static::getConfigField($cx_options, $val, static::EDIT);
 
         if (in_array($val['id'], ['type', 'key', 'element'])) {
             $field->setLabelClass(['asterisk']);
@@ -255,7 +255,7 @@ class Builder
 
         // fill value
 
-        if ($mode == self::Edit) {
+        if ($mode == static::EDIT) {
             static::fillData($field, $etype, $rowname, $val['value']);
         }
 
@@ -272,7 +272,7 @@ class Builder
 
                 $field->uniqueName();
             } else {
-                if ($mode == self::UPDATE) {
+                if ($mode == static::UPDATE) {
                     $field->rules('required');
                 }
             }
