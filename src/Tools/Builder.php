@@ -215,6 +215,17 @@ class Builder
                 $field = new Text($rowname, [$label]);
             }
 
+            if ($etype == 'editor') {
+
+                $etype = 'editor[' . array_get($options, 'editor_name', 'editor') . ']';
+
+            } else if ($etype == 'normal') {
+
+                $etype = '[' . array_get($options, '__element__', 'text') . ']';
+            } else {
+                $etype = '[' . $etype . ']';
+            }
+
             $field->help('<span class="label label-warning">The ' . $etype . ' is unuseable!</span>');
 
             unset($cx_options[$val['name']]['help']);
