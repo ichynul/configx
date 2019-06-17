@@ -307,7 +307,7 @@ class Updater
 
             $cx_options = json_decode($configx_options['description'], 1);
         } else {
-            $configx_options = $this->createConfigx();
+            $configx_options = Tool::createConfigx();
         }
 
         return $cx_options;
