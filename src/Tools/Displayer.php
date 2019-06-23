@@ -110,7 +110,7 @@ class Displayer
         Tree::getConfigTabs($tabs, $cx_options);
 
         $tree = Tree::getTree();
-\Log::info( $tree );
+
         foreach ($tree as $title => $fields) {
             $formhtml = '';
             foreach ($fields as $field) {
