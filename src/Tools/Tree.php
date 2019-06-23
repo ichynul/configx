@@ -3,7 +3,6 @@
 namespace Ichynul\Configx\Tools;
 
 use Encore\Admin\Facades\Admin;
-use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
 
 class Tree
@@ -27,15 +26,18 @@ class Tree
         $check_permission = Tool::checkPermission();
 
         foreach ($tabs as $key => &$value) {
-            if (empty($value)) {
-                $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
-            }
             if ($check_permission && !Admin::user()->can('confix.tab.' . $key)) {
                 continue;
             }
             $subs = ConfigxModel::group($key);
             if ($cx_options) {
                 $subs = Tool::sortGroupConfigs($subs, $cx_options);
+            }
+
+            static::$tree[$value] = [];
+
+            if (empty($subs)) {
+                continue;
             }
             foreach ($subs as $val) {
                 if (preg_match('/\$admin\$/i', $val['name'])) {
@@ -64,9 +66,6 @@ class Tree
                     continue;
                 }
                 static::$tree[$value][] = $val;
-            }
-            if (empty($subs)) {
-                static::$tree[$value] = [];
             }
         }
     }

@@ -100,13 +100,6 @@ class Displayer
 
         if (Tool::checkPermission()) {
 
-            foreach ($tabs as $key => &$value) {
-
-                if (empty($value)) {
-                    $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
-                }
-            }
-
             Tool::createPermissions($tabs);
 
             Tool::createPermissions(['new_config' => trans('admin.edit') . '-config']);
@@ -117,7 +110,7 @@ class Displayer
         Tree::getConfigTabs($tabs, $cx_options);
 
         $tree = Tree::getTree();
-
+\Log::info( $tree );
         foreach ($tree as $title => $fields) {
             $formhtml = '';
             foreach ($fields as $field) {

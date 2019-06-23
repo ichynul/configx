@@ -178,6 +178,14 @@ class Tool
         if (isset($cx_options['__configx_tabs__']) && isset($cx_options['__configx_tabs__']['options'])) {
             $tabs = !empty($cx_options['__configx_tabs__']['options']) ? $cx_options['__configx_tabs__']['options'] : $tabs;
         }
+
+        foreach ($tabs as $key => &$value) {
+
+            if (empty($value)) {
+                $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
+            }
+        }
+
         return $tabs;
     }
 
