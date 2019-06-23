@@ -16,8 +16,7 @@ class Displayer
 {
     public static function newConfig($id = 0, $cx_options = [], $tabs)
     {
-        if (Configx::config('check_permission', false)) {
-            Tool::createPermissions(['new_config' => trans('admin.edit') . '-new_config']);
+        if (Tool::checkPermission()) {
 
             if (!Admin::user()->can('confix.tab.' . 'new_config')) {
                 return '';
@@ -67,8 +66,7 @@ class Displayer
 
     public static function tabsConfig($id = 0, $cx_options = [], $tabs)
     {
-        if (Configx::config('check_permission', false)) {
-            Tool::createPermissions(['tabs_config' => trans('admin.edit') . '-tabs_config']);
+        if (Tool::checkPermission()) {
 
             if (!Admin::user()->can('confix.tab.' . 'tabs_config')) {
                 return '';
@@ -100,8 +98,20 @@ class Displayer
     {
         $tab = new Wtab();
 
-        if (Configx::config('check_permission', false)) {
+        if (Tool::checkPermission()) {
+
+            foreach ($tabs as $key => &$value) {
+
+                if (empty($value)) {
+                    $value = trans('admin.configx.tabs.' . $key); // if tab name is empty , get from trans
+                }
+            }
+
             Tool::createPermissions($tabs);
+
+            Tool::createPermissions(['new_config' => trans('admin.edit') . '-config']);
+
+            Tool::createPermissions(['tabs_config' => trans('admin.edit') . '-tabs']);
         }
 
         Tree::getConfigTabs($tabs, $cx_options);
@@ -116,7 +126,10 @@ class Displayer
             $tab->add($title, '<div class="row">' . $formhtml . '</div>', false);
         }
 
-        $tab->addLink('+', admin_base_path('configx/edit/0') . '?do=new_config');
+        if (!Tool::checkPermission() || Admin::user()->can('confix.tab.' . 'new_config')) {
+
+            $tab->addLink('+', admin_base_path('configx/edit/0') . '?do=new_config');
+        }
 
         return static::createform($tab, $id);
     }

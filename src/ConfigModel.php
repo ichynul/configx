@@ -2,8 +2,8 @@
 
 namespace Ichynul\Configx;
 
-use Encore\Admin\Config\ConfigModel;
 use Encore\Admin\Auth\Database\Permission;
+use Encore\Admin\Config\ConfigModel;
 
 class ConfigxModel extends ConfigModel
 {
@@ -41,13 +41,16 @@ class ConfigxModel extends ConfigModel
     {
         $slug = 'confix.tab.' . $prefix;
         $name = trans('admin.configx.header') . '-' . $name;
-        if (Permission::where('slug', $slug)->orWhere('name', $name)->first()) {
+        if ($pm = Permission::where('slug', $slug)->first()) {
+            if ($pm->name != $name) {
+                $pm->update(['name' => $name]);
+            }
             return;
         }
         Permission::create([
-            'name'      => $name,
-            'slug'      => $slug,
-            'http_path' => '/configx/*'
+            'name' => $name,
+            'slug' => $slug,
+            'http_path' => "/configx/tab-{$prefix}",
         ]);
     }
 }

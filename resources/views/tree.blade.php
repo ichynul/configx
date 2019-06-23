@@ -6,9 +6,11 @@
         @foreach($tree as $title => $fields)
         <label class="control-label">
             <i class="fa fa-plus-square-o"></i>&nbsp;{!! $title !!}
+            @if($tabsEdit)
             <a href='{!! $tabsEdit !!}' style='margin-left:5px;' title='{!! $editTitle !!}'>
                 <i class='fa fa-edit'></i>
             </a>
+            @endif
         </label>
 
         <div class="dd">

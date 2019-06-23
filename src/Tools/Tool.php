@@ -152,10 +152,10 @@ class Tool
         $_tableInfo = [];
         foreach ($tableInfo as $k => $v) {
             $newKey = $mainKey . preg_replace('/.+(_\d+_\d+)$/', '$1', $k);
-            
+
             $_tableInfo[$newKey] = $v;
         }
-        
+
         return $_tableInfo;
     }
 
@@ -164,6 +164,11 @@ class Tool
         foreach ($tabs as $key => $val) {
             ConfigxModel::createPermission($key, $val);
         }
+    }
+
+    public static function checkPermission()
+    {
+        return Configx::config('check_permission', false);
     }
 
     public static function tabs($cx_options = [])

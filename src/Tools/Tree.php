@@ -24,7 +24,7 @@ class Tree
 
     public static function getConfigTabs($tabs, $cx_options = [])
     {
-        $check_permission = Configx::config('check_permission', false);
+        $check_permission = Tool::checkPermission();
 
         foreach ($tabs as $key => &$value) {
             if (empty($value)) {
@@ -79,7 +79,8 @@ class Tree
         $editTitle = trans('admin.edit');
         $deleteTitle = trans('admin.delete');
         $saveTitle = trans('admin.save');
-        $tabsEdit = admin_base_path('configx/edit/' . $id) . '?do=tabs_config';
+        $tabsEdit = !Tool::checkPermission() || Admin::user()->can('confix.tab.' . 'tabs_config') ?
+        admin_base_path('configx/edit/' . $id) . '?do=tabs_config' : '';
 
         foreach ($tree as &$fields) {
             foreach ($fields as &$field) {
