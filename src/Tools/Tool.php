@@ -262,4 +262,9 @@ class Tool
         }
     }
 
+    public static function createConfigx()
+    {
+        return new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
+    }
+
 }

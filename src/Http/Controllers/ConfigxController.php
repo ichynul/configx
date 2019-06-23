@@ -68,7 +68,7 @@ class ConfigxController extends Controller
         if ($configx_options && $configx_options['description']) {
             $cx_options = json_decode($configx_options['description'], 1);
         } else {
-            $configx_options = $this->createConfigx();
+            $configx_options = Tool::createConfigx();
         }
         $data = $request->input('data');
 
@@ -87,11 +87,6 @@ class ConfigxController extends Controller
         $configx_options['description'] = json_encode($cx_options);
         $configx_options->save();
         return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
-    }
-
-    protected function createConfigx()
-    {
-        return new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
     }
 
     protected function backUp($configx_options)
