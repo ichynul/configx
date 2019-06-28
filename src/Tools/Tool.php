@@ -278,7 +278,7 @@ class Tool
             return $__configx__;
         }
 
-        return new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
+        return ConfigxModel::create(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
     }
 
 }
