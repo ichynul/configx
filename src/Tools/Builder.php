@@ -353,6 +353,16 @@ class Builder
                             array_set($cx_options[$conf['name']], 'element', 'textSmall');
                         }
 
+                        if (!isset($cx_options[$conf['name']])) {
+                            $cx_options[$conf['name']] = [
+                                'options' => [],
+                                'element' => 'normal',
+                                'help' => '',
+                                'name' => '',
+                                'order' => 999,
+                            ];
+                        }
+
                         $tableField = static::getConfigField($cx_options, $conf, $mode);
 
                         $tableRow->pushField($tableField, 1);
