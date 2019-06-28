@@ -300,14 +300,13 @@ class Updater
 
     protected static function cxOptions()
     {
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+        $__configx__ = Tool::getConfigx();
+
         $cx_options = [];
 
-        if ($configx_options && $configx_options['description']) {
+        if ($__configx__ && $__configx__['description']) {
 
-            $cx_options = json_decode($configx_options['description'], 1);
-        } else {
-            $configx_options = Tool::createConfigx();
+            $cx_options = json_decode($__configx__['description'], 1);
         }
 
         return $cx_options;
