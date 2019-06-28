@@ -6,7 +6,6 @@ use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Widgets\Tab as Wtab;
-use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\Configx\Field\Outer;
 use Ichynul\Configx\FormWgt;
@@ -110,7 +109,7 @@ class Displayer
         Tree::getConfigTabs($tabs, $cx_options);
 
         $tree = Tree::getTree();
-\Log::info( $tree );
+
         foreach ($tree as $title => $fields) {
             $formhtml = '';
             foreach ($fields as $field) {
