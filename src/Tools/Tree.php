@@ -40,6 +40,15 @@ class Tree
                 continue;
             }
             foreach ($subs as $val) {
+                if (!isset($cx_options[$val['name']])) {
+                    $cx_options[$val['name']] = [
+                        'options' => [],
+                        'element' => 'normal',
+                        'help' => '',
+                        'name' => '',
+                        'order' => 999,
+                    ];
+                }
                 if (preg_match('/\$admin\$/i', $val['name'])) {
                     $old = $val['name'];
                     $new = preg_replace('/\$admin\$/i', 'admin_' . Admin::user()->id, $old);
@@ -55,12 +64,9 @@ class Tree
                 if (preg_match('/admin_\d+?/i', $val['name'])) {
                     continue;
                 }
-                if ($cx_options && isset($cx_options[$val['name']])) {
-                    $val['etype'] = $cx_options[$val['name']]['element'];
-                } else {
-                    $val['etype'] = 'normal';
-                }
-                if (isset($cx_options[$val['name']]) && isset($cx_options[$val['name']]['table_field'])) {
+                $val['etype'] = $cx_options[$val['name']]['element'];
+
+                if (isset($cx_options[$val['name']]['table_field'])) {
 
                     static::$tableFields[$val['name']] = $val;
                     continue;

@@ -15,19 +15,20 @@ class ConfigxController extends Controller
     {
         $do = $request->input('do');
 
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+        $__configx__ = Tool::getConfigx();
 
         $cx_options = [];
-        if ($configx_options && $configx_options['description']) {
 
-            $cx_options = json_decode($configx_options['description'], 1);
+        if ($__configx__ && $__configx__['description']) {
+
+            $cx_options = json_decode($__configx__['description'], 1);
         }
 
         $tabs = Tool::tabs($cx_options);
 
         if ($do == 'backup') {
 
-            $this->backUp($configx_options);
+            $this->backUp($__configx__);
 
             $do = 'new_config';
         }
@@ -63,13 +64,15 @@ class ConfigxController extends Controller
 
     public function postSort(Request $request)
     {
+        $__configx__ = Tool::getConfigx();
+
         $cx_options = [];
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
-        if ($configx_options && $configx_options['description']) {
-            $cx_options = json_decode($configx_options['description'], 1);
-        } else {
-            $configx_options = Tool::createConfigx();
+        
+        if ($__configx__ && $__configx__['description']) {
+
+            $cx_options = json_decode($__configx__['description'], 1);
         }
+
         $data = $request->input('data');
 
         $i = 0;

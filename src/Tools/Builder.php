@@ -20,7 +20,13 @@ class Builder
     public static function createField($val, $cx_options = [])
     {
         if (!isset($cx_options[$val['name']])) {
-            $cx_options[$val['name']] = [];
+            $cx_options[$val['name']] = [
+                'options' => [],
+                'element' => 'normal',
+                'help' => '',
+                'name' => '',
+                'order' => 999,
+            ];
         }
 
         $field = static::getConfigField($cx_options, $val, static::EDIT);

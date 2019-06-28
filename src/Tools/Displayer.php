@@ -6,7 +6,6 @@ use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form\Field\Hidden;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Widgets\Tab as Wtab;
-use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\Configx\Field\Outer;
 use Ichynul\Configx\FormWgt;

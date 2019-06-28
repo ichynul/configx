@@ -270,9 +270,15 @@ class Tool
         }
     }
 
-    public static function createConfigx()
+    public static function getConfigx()
     {
-        return new ConfigxModel(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
+        $__configx__ = ConfigxModel::where('name', '__configx__')->first();
+
+        if ($__configx__) {
+            return $__configx__;
+        }
+
+        return ConfigxModel::create(['name' => '__configx__', 'description' => '', 'value' => 'do not delete']);
     }
 
 }
