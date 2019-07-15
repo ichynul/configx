@@ -55,6 +55,8 @@ class Updater
 
         admin_toastr(trans('admin.save_succeeded'));
 
+        Session::put('tabindex', '0');
+
         return redirect()->to(admin_base_path('configx/edit/' . $id) . '?do=tabs_config');
     }
 
