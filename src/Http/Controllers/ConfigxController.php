@@ -87,8 +87,8 @@ class ConfigxController extends Controller
             }
         }
         $cx_options = Tool::remove($cx_options);
-        $configx_options['description'] = json_encode($cx_options);
-        $configx_options->save();
+        $__configx__['description'] = json_encode($cx_options);
+        $__configx__->save();
         return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
     }
 
