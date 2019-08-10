@@ -316,10 +316,10 @@ class Updater
 
     protected static function cxSave($cx_options)
     {
-        $configx_options = ConfigxModel::where('name', '__configx__')->first();
+        $__configx__ = Tool::getConfigx();
 
         $cx_options = Tool::remove($cx_options);
-        $configx_options['description'] = json_encode($cx_options);
-        $configx_options->save();
+        $__configx__['description'] = json_encode($cx_options);
+        $__configx__->save();
     }
 }
