@@ -92,12 +92,12 @@ class ConfigxController extends Controller
         return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
     }
 
-    protected function backUp($configx_options)
+    protected function backUp($__configx__)
     {
-        if ($configx_options && $configx_options['description']) {
+        if ($__configx__ && $__configx__['description']) {
             app('files')->put(
                 storage_path('app/public/configx.json'),
-                $configx_options['description']
+                $__configx__['description']
             );
 
             admin_success(trans('admin.succeeded'), "Configx options save to : /wwwroot/storage/app/public/configx.json");
