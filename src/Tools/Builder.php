@@ -221,18 +221,20 @@ class Builder
                 $field = new Text($rowname, [$label]);
             }
 
+            $msg = '';
+
             if ($etype == 'editor') {
 
-                $etype = 'editor[' . array_get($options, 'editor_name', 'editor') . ']';
+                $msg = 'editor[' . array_get($options, 'editor_name', 'editor') . ']';
 
             } else if ($etype == 'normal') {
 
-                $etype = '[' . array_get($options, '__element__', 'text') . ']';
+                $msg = '[' . array_get($options, '__element__', 'text') . ']';
             } else {
-                $etype = '[' . $etype . ']';
+                $msg = '[' . $etype . ']';
             }
 
-            $field->help('<span class="label label-warning">The ' . $etype . ' is unuseable!</span>');
+            $field->help('<span class="label label-warning">The ' . $msg . ' is unuseable!</span>');
 
             unset($cx_options[$val['name']]['help']);
 
@@ -283,6 +285,14 @@ class Builder
         if ($options) {
 
             $field = Tool::callUserfunctions($field, $options);
+
+            if (!in_array($etype, ['image', 'file', 'multiple_image', 'multiple_file'])) {
+
+                if ($mode == static::UPDATE) {
+                    $field->rules('required');
+                }
+            }
+            
         } else {
 
             if (in_array($etype, ['image', 'file', 'multiple_image', 'multiple_file'])) {
@@ -388,11 +398,10 @@ class Builder
         if ($type == 'editor') {
 
             $type = array_get($options, 'editor_name', 'editor');
-
         } else if ($type == 'normal') {
 
             $type = array_get($options, '__element__', 'text');
-        } else if ($type == 'radio_group') {
+        } else if ($type == 'radio_group' || $type == 'yes_or_no') {
 
             $type = 'radio';
         } else if ($type == 'checkbox_group') {

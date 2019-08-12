@@ -153,7 +153,7 @@ class Updater
 
     protected static function saveValue($columns, $value)
     {
-        if (empty($value)) {
+        if ($value == null || $value == '') {
             return;
         }
 
