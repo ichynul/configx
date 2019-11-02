@@ -4,6 +4,7 @@ namespace Ichynul\Configx\Tools;
 
 use Encore\Admin\Facades\Admin;
 use Ichynul\Configx\ConfigxModel;
+use Illuminate\Support\Arr;
 
 class Tree
 {
@@ -94,9 +95,9 @@ class Tree
                     $cx_options[$field['name']] = [];
                 }
 
-                $options = array_get($cx_options[$field['name']], 'options', []);
+                $options = Arr::get($cx_options[$field['name']], 'options', []);
 
-                $label = array_get($cx_options[$field['name']], 'name');
+                $label = Arr::get($cx_options[$field['name']], 'name');
                 if (!$label) {
                     $label = trans('admin.configx.' . $field['name']);
                 }
@@ -130,9 +131,9 @@ class Tree
                             $tds[$tk] = $tableFields[$tk];
                             $toptions = [];
                             if (isset($cx_options[$tk])) {
-                                $toptions = array_get($cx_options[$tk], 'options', []);
+                                $toptions = Arr::get($cx_options[$tk], 'options', []);
                             }
-                            $label = array_get($cx_options[$tk], 'name');
+                            $label = Arr::get($cx_options[$tk], 'name');
                             if (!$label) {
                                 $label = trans('admin.configx.' . $tk);
                             }

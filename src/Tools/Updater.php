@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Arr;
 
 class Updater
 {
@@ -214,7 +215,7 @@ class Updater
             ];
         }
         $table_field = isset($cx_options[$new_key]['table_field']);
-        $order = array_get($cx_options[$new_key], 'order', 999);
+        $order = Arr::get($cx_options[$new_key], 'order', 999);
         if (!empty($request->values['c_options'])) {
             $c_options = explode(PHP_EOL, $request->values['c_options']);
             $arr = [];

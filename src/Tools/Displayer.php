@@ -10,6 +10,7 @@ use Ichynul\Configx\ConfigxModel;
 use Ichynul\Configx\Field\Outer;
 use Ichynul\Configx\FormWgt;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Arr;
 
 class Displayer
 {
@@ -29,7 +30,7 @@ class Displayer
 
         if ($id > 0) {
             $config = ConfigxModel::findOrFail($id);
-            $label = $cx_options && isset($cx_options[$config['name']]) ? array_get($cx_options[$config['name']], 'name') : '';
+            $label = $cx_options && isset($cx_options[$config['name']]) ? Arr::get($cx_options[$config['name']], 'name') : '';
             if (!$label) {
                 $label = trans('admin.configx.' . $config['name']);
             }

@@ -11,6 +11,7 @@ use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\RowTable\Table;
 use Ichynul\RowTable\TableRow;
+use Illuminate\Support\Arr;
 
 class Builder
 {
@@ -36,7 +37,7 @@ class Builder
         }
 
         if (isset($cx_options[$val['name']]['options'])) {
-            $options = array_get($cx_options[$val['name']], 'options', []);
+            $options = Arr::get($cx_options[$val['name']], 'options', []);
             if (isset($options['divide'])) {
                 if ($options['divide'] == 'befor') {
                     return '<hr style="width: 99%;">' . $field->render();
@@ -67,7 +68,7 @@ class Builder
                 $field = new Text($rowname, [$label]);
                 $field->readOnly();
                 $typekey = explode('.', $editName)[0];
-                $typename = array_get($tabs, $typekey);
+                $typename = Arr::get($tabs, $typekey);
                 if (empty($typename)) {
                     $typename = trans('admin.configx.tabs.' . $typekey); // if tab name is empty , get from trans
                 }
@@ -181,7 +182,7 @@ class Builder
     {
         $rowname = 'c_' . $val['id'] . '_';
 
-        $label = array_get($cx_options[$val['name']], 'name', '');
+        $label = Arr::get($cx_options[$val['name']], 'name', '');
         if (!$label) {
             $label = trans('admin.configx.' . $val['name']);
         }
@@ -190,8 +191,8 @@ class Builder
             $cx_options[$val['name']] = [];
         }
 
-        $etype = array_get($cx_options[$val['name']], 'element', 'normal');
-        $options = array_get($cx_options[$val['name']], 'options', []);
+        $etype = Arr::get($cx_options[$val['name']], 'element', 'normal');
+        $options = Arr::get($cx_options[$val['name']], 'options', []);
 
         //create field
         if ($etype == 'table') {
@@ -225,11 +226,11 @@ class Builder
 
             if ($etype == 'editor') {
 
-                $msg = 'editor[' . array_get($options, 'editor_name', 'editor') . ']';
+                $msg = 'editor[' . Arr::get($options, 'editor_name', 'editor') . ']';
 
             } else if ($etype == 'normal') {
 
-                $msg = '[' . array_get($options, '__element__', 'text') . ']';
+                $msg = '[' . Arr::get($options, '__element__', 'text') . ']';
             } else {
                 $msg = '[' . $etype . ']';
             }
@@ -320,7 +321,7 @@ class Builder
 
             $i = 0;
             foreach ($columns as $name => $column) {
-                $data[$column] = array_get($values, $i, '-');
+                $data[$column] = Arr::get($values, $i, '-');
                 $i += 1;
             }
 
@@ -357,7 +358,7 @@ class Builder
                     $conf = ConfigxModel::where('name', $fieldKey)->first();
                     if ($conf) {
 
-                        $etype = array_get($cx_options[$conf['name']], 'element', 'normal');
+                        $etype = Arr::get($cx_options[$conf['name']], 'element', 'normal');
 
                         if ($etype == 'normal' && $options['cols'] > 8) {
                             array_set($cx_options[$conf['name']], 'element', 'textSmall');
@@ -397,10 +398,10 @@ class Builder
     {
         if ($type == 'editor') {
 
-            $type = array_get($options, 'editor_name', 'editor');
+            $type = Arr::get($options, 'editor_name', 'editor');
         } else if ($type == 'normal') {
 
-            $type = array_get($options, '__element__', 'text');
+            $type = Arr::get($options, '__element__', 'text');
         } else if ($type == 'radio_group' || $type == 'yes_or_no') {
 
             $type = 'radio';
