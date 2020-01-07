@@ -77,7 +77,7 @@ class Tool
             }
         }
         if (count($forget)) {
-            array_forget($cx_options, $forget);
+            Arr::forget($cx_options, $forget);
         }
         return $cx_options;
     }
