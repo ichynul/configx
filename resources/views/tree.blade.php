@@ -16,7 +16,7 @@
         <div class="dd">
             <ol class="dd-list" style="left:2%;">
                 @foreach($fields as $field)
-                @if(isset($field['options']) && Arr::get($field['options'],'divide') =='befor')
+                @if(isset($field['options']) && \Illuminate\Support\Arr::get($field['options'],'divide') =='befor')
                 <li style="margin:5px 0;text-align:center;"><i class="fa fa-scissors"></i> - - - - - - - - - - - - - -</li>
                 @endif
                 <li title="{!! $field['name'] !!}" style="border:1px dashed #c1c1c1;padding:5px;margin-bottom:5px;color:#666;overflow:hidden;" class="dd-item configx-{!! $field['id'] !!}" data-id="{!! $field['id'] !!}">
