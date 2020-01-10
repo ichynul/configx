@@ -39,7 +39,7 @@
                     </ul>
                     @endif
                 </li>
-                @if(isset($field['options']) && Arr::get($field['options'],'divide') =='after')
+                @if(isset($field['options']) && \Illuminate\Support\Arr::get($field['options'],'divide') =='after')
                 <li style="margin:5px 0;text-align:center;"><i class="fa fa-scissors"></i> - - - - - - - - - - - - - -</li>
                 @endif
                 @endforeach
