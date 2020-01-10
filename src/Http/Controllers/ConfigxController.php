@@ -92,6 +92,26 @@ class ConfigxController extends Controller
         return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
     }
 
+    public function delFile($id, Request $request)
+    {
+        $rowname = 'c_' . $id . '_';
+
+        $field = new MultipleFile($rowname, ['']);
+
+        $config = ConfigxModel::findOrFail($id);
+
+        $field->setOriginal([$rowname => explode(',', $config->value)]);
+
+        $value = $field->destroy($request->input('key'));
+
+        $value = implode(',', $value);
+
+        $config->value = $value;
+        $config->update();
+
+        return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
+    }
+
     protected function backUp($__configx__)
     {
         if ($__configx__ && $__configx__['description']) {

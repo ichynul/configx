@@ -2,10 +2,10 @@
 
 namespace Ichynul\Configx\Tools;
 
-use Ichynul\Configx\Configx;
-use Ichynul\Configx\ConfigxModel;
 use Encore\Admin\Form\Field\MultipleFile;
 use Encore\Admin\Form\Field\MultipleSelect;
+use Ichynul\Configx\Configx;
+use Ichynul\Configx\ConfigxModel;
 use Illuminate\Support\Arr;
 use Illuminate\Support\MessageBag;
 
@@ -48,13 +48,23 @@ class Tool
                     return preg_replace("/^\s*['\"]|['\"]\s*$/", '', $s);
                 })->all();
 
+                $method = str_replace_first('@', '', $k);
+
                 try {
                     call_user_func_array(
-                        [$field, str_replace_first('@', '', $k)],
+                        [$field, $method],
                         $args
                     );
+
+                    if ($field instanceof MultipleFile && strtolower($method) == 'removable') {
+
+                        $id = preg_replace('/^c_(\d+)_/i', '$1', $field->column());
+
+                        $field->options(['deleteUrl' => admin_base_path('configx/delfile/' . $id)]);
+                    }
+
                 } catch (\Exception $e) {
-                    admin_warning('Error', "'" . $field->label() . "' call method : " . class_basename($field) . '->' . str_replace_first('@', '', $k) . "('" . implode("','", $args) . "')" . ' failed !<br />' . $e->getMessage());
+                    admin_warning('Error', "'" . $field->label() . "' call method : " . class_basename($field) . '->' . $method . "('" . implode("','", $args) . "')" . ' failed !<br />' . $e->getMessage());
                     \Log::error($e->__toString());
                 }
             }
