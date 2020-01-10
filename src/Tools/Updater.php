@@ -117,6 +117,8 @@ class Updater
             }
         }
 
+        $data = static::handleFileSort($data);
+
         $prepare = Tool::prepareUpdate($fields, $data);
 
         \DB::beginTransaction();
