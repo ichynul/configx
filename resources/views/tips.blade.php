@@ -114,6 +114,10 @@ format : rgba
 @uniqueName
 @sequenceName
 @removable
+@downloadable
+@retainable
+//multiple
+@sortable
 @move : newdir, newname
 @dir : newdir
 @name : newname

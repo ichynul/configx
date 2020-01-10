@@ -2,6 +2,7 @@
 
 namespace Ichynul\Configx\Http\Controllers;
 
+use Encore\Admin\Form\Field;
 use Encore\Admin\Form\Field\MultipleFile;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\Configx\Tools\Displayer;
@@ -103,7 +104,9 @@ class ConfigxController extends Controller
 
         $field->setOriginal([$rowname => explode(',', $config->value)]);
 
-        $value = $field->destroy($request->input('key'));
+        $this->handleFileDelete($request->all());
+
+        $value = $field->destroy($request->input(Field::FILE_DELETE_FLAG));
 
         $value = implode(',', $value);
 
@@ -111,6 +114,16 @@ class ConfigxController extends Controller
         $config->update();
 
         return response()->json(['status' => 1, 'message' => trans('admin.update_succeeded')]);
+    }
+
+    protected function handleFileDelete($input)
+    {
+        if (array_key_exists(Field::FILE_DELETE_FLAG, $input)) {
+            $input[Field::FILE_DELETE_FLAG] = $input['key'];
+            unset($input['key']);
+        }
+
+        request()->replace($input);
     }
 
     protected function backUp($__configx__)

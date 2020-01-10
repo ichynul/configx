@@ -2,13 +2,15 @@
 
 namespace Ichynul\Configx\Tools;
 
+use Encore\Admin\Form\Field;
+use Encore\Admin\Form\Field\MultipleFile;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\RowTable\Field\Collect;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Arr;
 
 class Updater
 {
@@ -91,8 +93,17 @@ class Updater
                     $subFields = $field->getFields();
 
                     foreach ($subFields as $sub) {
+
+                        if ($sub instanceof MultipleFile) {
+
+                            $sub->setOriginal([$sub->column() => explode(',', $val['value'])]);
+                        }
+
                         $fields[] = $sub;
                     }
+                } else if ($field instanceof MultipleFile) {
+
+                    $field->setOriginal([$field->column() => explode(',', $val['value'])]); // fiels = old + new uploads, suport
                 }
 
                 $validator = $field->getValidator($data);
@@ -131,6 +142,32 @@ class Updater
         }
 
         return redirect()->to(admin_base_path('configx/edit/' . $id));
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    protected static function handleFileSort($input = [])
+    {
+        if (!array_key_exists(Field::FILE_SORT_FLAG, $input)) {
+            return $input;
+        }
+
+        $sorts = array_filter($input[Field::FILE_SORT_FLAG]);
+
+        if (empty($sorts)) {
+            return $input;
+        }
+
+        foreach ($sorts as $column => $order) {
+            $input[$column] = $order;
+        }
+
+        request()->replace($input);
+
+        return $input;
     }
 
     protected static function getErrorIndex($first, $msg, $cx_options)
