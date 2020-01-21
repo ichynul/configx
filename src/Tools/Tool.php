@@ -48,7 +48,7 @@ class Tool
                     return preg_replace("/^\s*['\"]|['\"]\s*$/", '', $s);
                 })->all();
 
-                $method = str_replace_first('@', '', $k);
+                $method = str_replace('@', '', $k);
 
                 try {
                     call_user_func_array(
