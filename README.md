@@ -39,7 +39,7 @@ Add a tabs config in `config/admin.php`:
 
 ## Usage
 
-Open `http://your-host/admin/configx`
+Open `http://your-host/admin/configx/edit`
 
 ## Demo
 
