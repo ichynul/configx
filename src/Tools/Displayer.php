@@ -14,6 +14,28 @@ use Illuminate\Support\Arr;
 
 class Displayer
 {
+    /**
+     * Undocumented variable
+     *
+     * @var FormWgt
+     */
+    private static $formWgt;
+
+    /**
+     * Undocumented function
+     *
+     * @return FormWgt
+     */
+    public static function getFormWgt()
+    {
+        if(empty(static::$formWgt))
+        {
+            static::$formWgt = new FormWgt(['do' => request('do', ''), 'tabindex' => Session::get('tabindex')]);
+        }
+
+        return static::$formWgt;
+    }
+
     public static function newConfig($id = 0, $cx_options = [], $tabs)
     {
         if (Tool::checkPermission()) {
@@ -134,7 +156,7 @@ class Displayer
 
         $doField = new Hidden('do', 'do');
 
-        $form = new FormWgt(['do' => request('do', ''), 'tabindex' => Session::get('tabindex')]);
+        $form = static::$formWgt;
 
         $html = new Outer($tab->render(), []);
 

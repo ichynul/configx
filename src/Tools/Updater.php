@@ -244,10 +244,10 @@ class Updater
                 $defaultVal = '-';
             }
         }
-        if (!isset($cx_options[$new_key])) {
+        if (!isset($cx_options[$new_key]) || empty($cx_options[$new_key])) {
             $cx_options[$new_key] = [
                 'options' => [],
-                'element' => '',
+                'element' => 'normal',
                 'help' => '',
                 'name' => '',
                 'order' => 999,

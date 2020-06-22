@@ -65,7 +65,7 @@ class Tree
                 if (preg_match('/admin_\d+?/i', $val['name'])) {
                     continue;
                 }
-                $val['etype'] = $cx_options[$val['name']]['element'];
+                $val['etype'] = Arr::get($cx_options[$val['name']], 'element', 'normal');
 
                 if (isset($cx_options[$val['name']]['table_field'])) {
 
@@ -84,7 +84,7 @@ class Tree
 
         $editTitle = trans('admin.edit');
         $deleteTitle = trans('admin.delete');
-        $saveTitle = trans('admin.save');
+        $saveTitle = trans('admin.configx.backup');
         $tabsEdit = !Tool::checkPermission() || Admin::user()->can('confix.tab.' . 'tabs_config') ?
         admin_base_path('configx/edit/' . $id) . '?do=tabs_config' : '';
 

@@ -29,7 +29,7 @@ Add a tabs config in `config/admin.php`:
                 'uplaod' => '上传设置',
                 'image' => '' // if tab name is empty, get from trans : trans('admin.configx.tabs.image'); tab名称留空则从翻译中获取
             ],
-            // Whether check group permissions. 
+            // Whether check group permissions.
             //if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
             'check_permission' => false
         ],
@@ -148,6 +148,7 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
         'new_config_options' => '配置扩展项',
         'header' => '网站设置',
         'desc' => '网站设置设置',
+        'backup' => '备份',
         'element' => [
            'normal' => '默认',
             'textarea' => '文本域',

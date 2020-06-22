@@ -1,41 +1,6 @@
 Help
 <div class="row">
-    <div class="col-sm-12">
-        Common options:
-        <pre>
-divide : after
-//&lt;hr&gt; befor or after this element.
-</pre>
-        Common Methods:
-        <pre>
-@rules : required|min:3|max:12
-@setWidth : 6, 2
-//etc..
-//@methodname : arg1, arg2 ...
-//suported args types [string/integer/folat/boolean]
-</pre>
-    </div>
-    <div class="elem normal_elem col-sm-12">
-        Replace default element:
-        <pre>
-__element__ : mobile
-//__element__ : ip
-//__element__ : url
-//__element__ : email
-//__element__ : currency
-//etc..
-</pre>
-        Extend element:
-        <pre>
-__element__ : test_text
-
-//Extend element in Admin/bootstrap.php :
-Form::extend('new_element', App/Admin/Extensions/NewElement::class);
-//Useage
-__element__ : new_element
-</pre>
-    </div>
-    <div class="elem group_elem col-sm-12">Use texts
+<div class="elem group_elem col-sm-12">Use texts
         <pre>
 text1
 text2
@@ -88,6 +53,41 @@ format : rgba
 @rgb
 @rgba
 
+</pre>
+    </div>
+    <div class="col-sm-12">
+        Common options:
+        <pre>
+divide : after
+//&lt;hr&gt; befor or after this element.
+</pre>
+        Common Methods:
+        <pre>
+@rules : required|min:3|max:12
+@setWidth : 6, 2
+//etc..
+//@methodname : arg1, arg2 ...
+//suported args types [string/integer/folat/boolean]
+</pre>
+    </div>
+    <div class="elem normal_elem col-sm-12">
+        Replace default element:
+        <pre>
+__element__ : mobile
+//__element__ : ip
+//__element__ : url
+//__element__ : email
+//__element__ : currency
+//etc..
+</pre>
+        Extend element:
+        <pre>
+__element__ : test_text
+
+//Extend element in Admin/bootstrap.php :
+Form::extend('new_element', App/Admin/Extensions/NewElement::class);
+//Useage
+__element__ : new_element
 </pre>
     </div>
     <div class="elem image_elem col-sm-12">

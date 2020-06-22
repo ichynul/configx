@@ -118,6 +118,15 @@ class Tool
 
         $i = 0;
         foreach ($subs as $sub) {
+            if (!isset($cx_options[$sub['name']]) || empty($cx_options[$sub['name']])) {
+                $cx_options[$sub['name']] = [
+                    'options' => [],
+                    'element' => 'normal',
+                    'help' => '',
+                    'name' => '',
+                    'order' => 999,
+                ];
+            }
             if (isset($cx_options[$sub['name']]) && isset($cx_options[$sub['name']]['table_field'])) {
                 continue;
             }

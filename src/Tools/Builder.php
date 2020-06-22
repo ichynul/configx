@@ -175,12 +175,24 @@ class Builder
             $field->setLabelClass(['asterisk']);
         }
 
+        $field->setWidgetForm(Displayer::getFormWgt());
+
         return $field->render();
     }
 
     public static function getConfigField($cx_options = [], $val, $mode)
     {
         $rowname = 'c_' . $val['id'] . '_';
+
+        if (!isset($cx_options[$val['name']]) || empty($cx_options[$val['name']])) {
+            $cx_options[$val['name']] = [
+                'options' => [],
+                'element' => 'normal',
+                'help' => '',
+                'name' => '',
+                'order' => 999,
+            ];
+        }
 
         $label = Arr::get($cx_options[$val['name']], 'name', '');
         if (!$label) {
@@ -272,7 +284,7 @@ class Builder
                 $field->options(['format' => $options['format']]);
             }
         }
-
+        $field->setWidgetForm(Displayer::getFormWgt());
         // fill value
 
         if ($mode == static::EDIT) {
@@ -293,7 +305,7 @@ class Builder
                     $field->rules('required');
                 }
             }
-            
+
         } else {
 
             if (in_array($etype, ['image', 'file', 'multiple_image', 'multiple_file'])) {
@@ -361,7 +373,7 @@ class Builder
                         $etype = Arr::get($cx_options[$conf['name']], 'element', 'normal');
 
                         if ($etype == 'normal' && $options['cols'] > 8) {
-                            array_set($cx_options[$conf['name']], 'element', 'textSmall');
+                            Arr::set($cx_options[$conf['name']], 'element', 'textSmall');
                         }
 
                         if (!isset($cx_options[$conf['name']])) {
@@ -396,6 +408,13 @@ class Builder
 
     protected static function trueType($type, $options = [])
     {
+        $type =trim($type);
+
+        if(empty($type))
+        {
+            $type == 'normal';
+        }
+
         if ($type == 'editor') {
 
             $type = Arr::get($options, 'editor_name', 'editor');
