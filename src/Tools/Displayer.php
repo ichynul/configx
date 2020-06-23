@@ -156,7 +156,7 @@ class Displayer
 
         $doField = new Hidden('do', 'do');
 
-        $form = static::$formWgt;
+        $form = static::getFormWgt();
 
         $html = new Outer($tab->render(), []);
 
