@@ -31,7 +31,8 @@ Add a tabs config in `config/admin.php`:
             ],
             // Whether check group permissions.
             //if (!Admin::user()->can('confix.tab.base')) {/*hide base tab*/ } .
-            'check_permission' => false
+            'check_permission' => false,
+            'break_when_errors' => false // do not save anything if have errors
         ],
     ],
 
