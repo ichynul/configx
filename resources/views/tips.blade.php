@@ -60,6 +60,7 @@ format : rgba
         <pre>
 divide : after
 //&lt;hr&gt; befor or after this element.
+rules : required|min:3|max:12
 </pre>
         Common Methods:
         <pre>
