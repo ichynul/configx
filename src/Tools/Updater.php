@@ -4,6 +4,7 @@ namespace Ichynul\Configx\Tools;
 
 use Encore\Admin\Form\Field;
 use Encore\Admin\Form\Field\MultipleFile;
+use Ichynul\Configx\Configx;
 use Ichynul\Configx\ConfigxModel;
 use Ichynul\RowTable\Field\Collect;
 use Illuminate\Http\Request;
@@ -121,20 +122,22 @@ class Updater
 
         $prepare = Tool::prepareUpdate($fields, $data);
 
-        \DB::beginTransaction();
-
-        foreach ($prepare as $column => $value) {
-
-            static::saveValue($column, $value);
-        }
-
-        static::cxSave($cx_options);
-
-        \DB::commit();
-
         $message = Tool::mergeValidationMessages($failedValidators);
 
-        admin_toastr(trans('admin.update_succeeded'));
+        if(!(Configx::config('break_when_errors', false) && $message->any()))
+        {
+            admin_toastr(trans('admin.update_succeeded'));
+            \DB::beginTransaction();
+
+            foreach ($prepare as $column => $value) {
+
+                static::saveValue($column, $value);
+            }
+
+            static::cxSave($cx_options);
+
+            \DB::commit();
+        }
 
         if ($message->any()) {
 
