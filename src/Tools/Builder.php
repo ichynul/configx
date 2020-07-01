@@ -284,6 +284,9 @@ class Builder
                 $field->options(['format' => $options['format']]);
             }
         }
+        if (isset($options['rules'])) {
+            $field->rules($options['rules']);
+        }
         $field->setWidgetForm(Displayer::getFormWgt());
         // fill value
 
