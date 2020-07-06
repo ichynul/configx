@@ -156,7 +156,7 @@ Add a lang config in `resources/lang/{zh-CN}/admin.php`
             'date' => '日期',
             'time' => '时间',
             'datetime' => '日期时间',
-            'password' => '密码'
+            'password' => '密码',
             'image' => '图片',
             'multiple_image' => '多图',
             'file' => '文件',
