@@ -17,7 +17,7 @@ class Configx extends Extension
      */
     public static function import()
     {
-        parent::createMenu('Configx', 'configx/edit', 'fa-toggle-on');
+        parent::createMenu('Configx', 'configx/edit/0', 'fa-toggle-on');
         parent::createPermission('Admin Configx', 'ext.configx', 'configx/*');
     }
 }
